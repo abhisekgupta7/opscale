@@ -12,8 +12,8 @@ export interface SignupInput {
 export interface SignupResult {
   success: boolean;
   message: string;
-  userId?: number;
-  organizationId?: number;
+  userId?: string;
+  organizationId?: string;
 }
 
 /**

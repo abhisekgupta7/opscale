@@ -15,6 +15,25 @@ import type { Account, User } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import type { Session } from "next-auth";
 
+/**
+ * Helper function to fetch and enrich user with organization data
+ */
+async function enrichUserWithOrg(userEmail: string) {
+  try {
+    const userRecord = await findUserByEmail(userEmail);
+    if (userRecord) {
+      const activeOrg = await getActiveOrgForUser(userRecord.id);
+      return {
+        activeOrgId: activeOrg.organizationId,
+        role: activeOrg.role as "OWNER" | "ADMIN" | "MEMBER",
+      };
+    }
+  } catch (error) {
+    console.error("Error fetching org:", error);
+  }
+  return null;
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [
     // Google OAuth Provider
@@ -45,7 +64,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         return {
-          id: result.user!.id.toString(),
+          id: result.user!.id,
           email: result.user!.email,
           name: result.user!.name,
         };
@@ -88,10 +107,10 @@ export const authOptions: NextAuthOptions = {
             );
 
             // Update user object with new ID for downstream callbacks
-            user.id = newUser.id.toString();
+            user.id = newUser.id;
           } else {
             // User exists, update user object with stored ID
-            user.id = existingUser.id.toString();
+            user.id = existingUser.id;
           }
         } catch (error) {
           console.error("Error in Google signIn callback:", error);
@@ -102,35 +121,19 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
 
-    async jwt({
-      token,
-      user,
-      account,
-    }: {
-      token: JWT;
-      user: User | undefined;
-      account: Account | null;
-    }) {
-      // On initial sign in
+    async jwt({ token, user }: { token: JWT; user: User | undefined }) {
+      // On initial sign in, populate token with user data
       if (user) {
         token.id = user.id;
         token.email = user.email;
         token.name = user.name;
         token.image = user.image;
 
-        // For Google OAuth, fetch/create membership
-        if (account?.provider === "google") {
-          try {
-            const userRecord = await findUserByEmail(user.email!);
-            if (userRecord) {
-              const activeOrg = await getActiveOrgForUser(userRecord.id);
-              token.activeOrgId = activeOrg.organizationId.toString();
-              token.role = activeOrg.role as "OWNER" | "ADMIN" | "MEMBER";
-            }
-          } catch (error) {
-            // User might be new, org creation happens elsewhere
-            console.error("Error fetching org for Google user:", error);
-          }
+        // Fetch organization data for both credentials and OAuth users
+        const orgData = await enrichUserWithOrg(user.email!);
+        if (orgData) {
+          token.activeOrgId = orgData.activeOrgId;
+          token.role = orgData.role;
         }
       }
 
@@ -156,4 +159,5 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET!,
 };
 
-export default NextAuth(authOptions);
+const handler = NextAuth(authOptions);
+export { handler as GET, handler as POST };

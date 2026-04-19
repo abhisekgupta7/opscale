@@ -7,9 +7,9 @@ import { eq, and } from "drizzle-orm";
 export type MembershipRole = "OWNER" | "ADMIN" | "MEMBER";
 
 export interface MembershipWithOrg {
-  id: number;
-  userId: number;
-  organizationId: number;
+  id: string;
+  userId: string;
+  organizationId: string;
   role: string;
   organizationName: string;
 }
@@ -18,7 +18,7 @@ export interface MembershipWithOrg {
  * Create organization and membership in transaction
  */
 export async function createOrganizationWithMembership(
-  userId: number,
+  userId: string,
   organizationName: string,
   role: MembershipRole = "OWNER",
 ) {
@@ -54,7 +54,7 @@ export async function createOrganizationWithMembership(
 /**
  * Get all memberships for a user with organization details
  */
-export async function getUserMemberships(userId: number) {
+export async function getUserMemberships(userId: string) {
   const memberships = await db
     .select({
       id: membershipsTable.id,
@@ -77,7 +77,7 @@ export async function getUserMemberships(userId: number) {
  * Get active membership for user
  * Returns the first/primary membership (you can customize this logic)
  */
-export async function getActiveOrgForUser(userId: number) {
+export async function getActiveOrgForUser(userId: string) {
   const memberships = await getUserMemberships(userId);
 
   if (memberships.length === 0) {
@@ -92,8 +92,8 @@ export async function getActiveOrgForUser(userId: number) {
  * Verify user has membership in organization with specific role
  */
 export async function verifyMembership(
-  userId: number,
-  organizationId: number,
+  userId: string,
+  organizationId: string,
   minRole?: MembershipRole,
 ) {
   const membership = await db

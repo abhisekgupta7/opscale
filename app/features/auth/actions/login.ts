@@ -12,12 +12,12 @@ export interface LoginResult {
   success: boolean;
   message: string;
   user?: {
-    id: number;
+    id: string;
     email: string;
     name: string;
   };
   activeOrg?: {
-    organizationId: number;
+    organizationId: string;
     role: string;
   };
 }

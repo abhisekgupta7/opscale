@@ -13,7 +13,7 @@ export interface CreateUserInput {
 }
 
 export interface UserWithPassword {
-  id: number;
+  id: string;
   email: string;
   name: string;
   passwordHash: string | null;
@@ -38,7 +38,7 @@ export async function findUserByEmail(email: string) {
 /**
  * Find user by ID
  */
-export async function findUserById(id: number) {
+export async function findUserById(id: string) {
   const user = await db
     .select()
     .from(usersTable)
