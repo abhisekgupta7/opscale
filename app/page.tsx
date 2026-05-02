@@ -7,6 +7,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { PricingSection as BillingPricingSection } from "@/app/features/billing/components/pricing-section";
+import Link from "next/link";
 
 const services = [
   {
@@ -88,12 +89,16 @@ function HomeSection() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <button className="inline-flex items-center justify-center px-8 py-3.5 rounded-lg bg-linear-to-r from-blue-600 to-blue-700 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all hover:from-blue-700 hover:to-blue-800">
+              <Link href={"/#pricing"}>
+                <button className="inline-flex items-center justify-center px-8 py-3.5 rounded-lg bg-linear-to-r from-blue-600 to-blue-700 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all hover:from-blue-700 hover:to-blue-800">
                 Start Free Trial
               </button>
-              <button className="inline-flex items-center justify-center px-8 py-3.5 rounded-lg border-2 border-slate-300 bg-white text-slate-900 font-semibold text-base hover:bg-slate-50 transition-all">
-                Schedule Demo
-              </button>
+              </Link>
+              <Link href="/billing/manual" className="inline-flex items-center justify-center px-8 py-3.5 rounded-lg border-2 border-slate-300 bg-white text-slate-900 font-semibold text-base hover:bg-slate-50 transition-all">
+                <button className="inline-flex items-center justify-center px-8 py-3.5 rounded-lg border-2 border-slate-300 bg-white text-slate-900 font-semibold text-base hover:bg-slate-50 transition-all">
+                  Schedule Demo
+                </button>
+              </Link>
             </div>
 
             <div className="flex items-center gap-6 pt-8 border-t border-slate-200">
@@ -254,12 +259,11 @@ function ContactsSection() {
             help.
           </p>
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <button className="inline-flex items-center justify-center px-8 py-3.5 rounded-lg bg-linear-to-r from-blue-600 to-blue-700 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all">
-              Schedule Consultation
-            </button>
-            <button className="inline-flex items-center justify-center px-8 py-3.5 rounded-lg border-2 border-slate-300 bg-white text-slate-900 font-semibold text-base hover:bg-slate-50 transition-all">
-              Contact Our Team
-            </button>
+            <Link href={"/billing/manual"}>
+              <button className="inline-flex items-center justify-center px-8 py-3.5 rounded-lg bg-linear-to-r from-blue-600 to-blue-700 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all hover:from-blue-700 hover:to-blue-800">
+                Get Started
+              </button>
+            </Link>
           </div>
         </div>
       </div>

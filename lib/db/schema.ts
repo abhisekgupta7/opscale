@@ -64,45 +64,45 @@ export const subscriptionsTable = pgTable("subscriptions", {
   updatedAt: timestamp().defaultNow().notNull(),
 });
 
-export const paymentsTable = pgTable("payments", {
-  id: uuid()
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
+export const paymentsTable = pgTable(
+  "payments",
+  {
+    id: uuid()
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
 
-  organizationId: uuid()
-    .notNull()
-    .references(() => organizationsTable.id, { onDelete: "cascade" }),
+    organizationId: uuid()
+      .notNull()
+      .references(() => organizationsTable.id, { onDelete: "cascade" }),
 
-  userId: uuid()
-    .notNull()
-    .references(() => usersTable.id, { onDelete: "cascade" }),
+    userId: uuid()
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "cascade" }),
 
-  // 🔥 provider abstraction
-  provider: varchar({ length: 50 }).notNull().default("MANUAL"), // MANUAL | ESewa
+    // 🔥 provider abstraction
+    provider: varchar({ length: 50 }).notNull().default("MANUAL"), // MANUAL | ESewa
 
-  // 🔥 payment identifier
-  pidx: varchar({ length: 255 }).unique(), // nullable for manual
+    // 🔥 payment identifier
+    pidx: varchar({ length: 255 }).unique(), // nullable for manual
 
-  // 💰 amount in paisa
-  amount: integer().notNull(),
+    // 💰 amount in paisa
+    amount: integer().notNull(),
 
-  currency: varchar({ length: 10 }).notNull().default("NPR"),
+    currency: varchar({ length: 10 }).notNull().default("NPR"),
 
-  // 🔥 status lifecycle
-  status: varchar({ length: 50 }).notNull().default("PENDING"), // PENDING | VERIFIED | REJECTED | COMPLETED
+    // 🔥 status lifecycle
+    status: varchar({ length: 50 }).notNull().default("PENDING"), // PENDING | VERIFIED | REJECTED | COMPLETED
 
-  // 📸 manual payment proof
-  proofUrl: varchar({ length: 255 }), // screenshot
+    // 📸 manual payment proof
+    proofUrl: varchar({ length: 255 }), // screenshot
 
-  reference: varchar({ length: 255 }), // txn id (optional)
+    reference: varchar({ length: 255 }), // txn id (optional)
 
-  createdAt: timestamp().defaultNow().notNull(),
-  updatedAt: timestamp().defaultNow().notNull(),
-});
-
-export const paymentsOrgIdx = index("payments_org_idx").on(
-  paymentsTable.organizationId,
-);
-export const paymentsUserIdx = index("payments_user_idx").on(
-  paymentsTable.userId,
+    createdAt: timestamp().defaultNow().notNull(),
+    updatedAt: timestamp().defaultNow().notNull(),
+  },
+  (table) => ({
+    paymentsOrgIdx: index("payments_org_idx").on(table.organizationId),
+    paymentsUserIdx: index("payments_user_idx").on(table.userId),
+  }),
 );

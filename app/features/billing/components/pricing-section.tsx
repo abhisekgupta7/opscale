@@ -2,9 +2,9 @@
 
 "use client";
 
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { startTrialAction } from "../actions/start-trial"
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { startTrialAction } from "../actions/start-trial";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -17,9 +17,12 @@ export function PricingSection() {
       const result = await startTrialAction();
       if (result.success) {
         toast.success(result.message);
+      } else {
+        toast.error(result.message);
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to start trial";
+      const message =
+        error instanceof Error ? error.message : "Failed to start trial";
       toast.error(message);
     } finally {
       setIsLoading(false);
@@ -28,7 +31,6 @@ export function PricingSection() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      
       {/* LEFT: FREE TRIAL */}
       <div className="border rounded-xl p-6">
         <h2 className="text-xl font-semibold">Start Free Trial</h2>
@@ -43,7 +45,7 @@ export function PricingSection() {
           <li>✔ Reports & analytics</li>
         </ul>
 
-        <Button 
+        <Button
           onClick={handleStartTrial}
           disabled={isLoading}
           className="mt-6 w-full"
@@ -72,7 +74,6 @@ export function PricingSection() {
           </Button>
         </Link>
       </div>
-
     </div>
-  )
-} 
+  );
+}

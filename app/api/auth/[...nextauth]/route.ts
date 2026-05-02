@@ -126,8 +126,8 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.email = user.email;
-        token.name = user.name;
-        token.image = user.image;
+        token.name = user.name || "";
+        token.image = user.image || undefined;
 
         // Fetch organization data for both credentials and OAuth users
         const orgData = await enrichUserWithOrg(user.email!);
@@ -142,9 +142,10 @@ export const authOptions: NextAuthOptions = {
 
     async session({ session, token }: { session: Session; token: JWT }) {
       if (session.user && token.id) {
-        session.user.id = token.id;
-        session.user.activeOrgId = token.activeOrgId;
-        session.user.role = token.role;
+        session.user.id = token.id as string;
+        session.user.activeOrgId = (token.activeOrgId as string) || undefined;
+        session.user.role =
+          (token.role as "OWNER" | "ADMIN" | "MEMBER") || undefined;
       }
 
       return session;

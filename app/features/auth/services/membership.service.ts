@@ -133,7 +133,7 @@ export async function verifyMembership(
 /**
  * Get organization by ID
  */
-export async function getOrganizationById(organizationId: number) {
+export async function getOrganizationById(organizationId: string) {
   const org = await db
     .select()
     .from(organizationsTable)
