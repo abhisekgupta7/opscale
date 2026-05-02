@@ -156,3 +156,47 @@ export const productsTable = pgTable(
     ),
   }),
 );
+
+export const ordersTable = pgTable("orders", {
+  id: uuid()
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  organizationId: uuid()
+    .notNull()
+    .references(() => organizationsTable.id, { onDelete: "cascade" }),
+  customerId: uuid()
+    .notNull()
+    .references(() => customerTable.id, { onDelete: "cascade" }),
+  totalAmount: integer().notNull(), // in paisa
+  status: varchar({ length: 50 }).notNull().default("PENDING"), // PENDING | COMPLETED | CANCELLED
+  createdAt: timestamp().defaultNow().notNull(),
+  updatedAt: timestamp().defaultNow().notNull(),
+});
+
+export const orderItemsTable = pgTable("order_items", {
+  id: uuid()
+    .primaryKey() 
+    .default(sql`gen_random_uuid()`),
+  orderId: uuid() 
+    .notNull()
+    .references(() => ordersTable.id, { onDelete: "cascade" }),
+  productId: uuid()
+    .notNull()
+    .references(() => productsTable.id, { onDelete: "cascade" }),
+  quantity: integer().notNull().default(1),
+  price: integer().notNull(), // price in paisa
+});
+
+export const customerTable = pgTable("customers", {
+  id: uuid()
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  organizationId: uuid()
+    .notNull()  
+    .references(() => organizationsTable.id, { onDelete: "cascade" }),
+  name: varchar({ length: 255 }).notNull(),
+  email: varchar({ length: 255 }).notNull(),
+  phone: varchar({ length: 20 }),
+  createdAt: timestamp().defaultNow().notNull(),
+  updatedAt: timestamp().defaultNow().notNull(),
+});
