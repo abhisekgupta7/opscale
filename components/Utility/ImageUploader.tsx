@@ -15,12 +15,14 @@ interface ImageUploaderProps {
   onUploadComplete: (url: string) => void;
   onError: () => void;
   folder?: string; // e.g., "/products", "/merchant/123/products", "/heroSection/images"
+  label?: string;
 }
 
 const ImageUploader = ({
   onUploadComplete,
   onError,
   folder = "/PaymentProofs", // Default folder if not provided
+  label = "Product Image",
 }: ImageUploaderProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedUrl, setUploadedUrl] = useState<string>("");
@@ -33,7 +35,7 @@ const ImageUploader = ({
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(
-          `Request failed with status ${response.status}: ${errorText}`
+          `Request failed with status ${response.status}: ${errorText}`,
         );
       }
 
@@ -175,7 +177,7 @@ const ImageUploader = ({
           htmlFor="product-image"
           className="text-emerald-900 font-semibold"
         >
-          Product Image
+          {label}
         </label>
         <Input
           id="product-image"

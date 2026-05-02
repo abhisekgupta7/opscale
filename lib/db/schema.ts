@@ -5,6 +5,8 @@ import {
   pgTable,
   integer,
   index,
+  unique,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -24,7 +26,7 @@ export const organizationsTable = pgTable("organizations", {
   id: uuid()
     .primaryKey()
     .default(sql`gen_random_uuid()`),
-  name: varchar({ length: 255 }).notNull(),
+  name: varchar({ length: 255 }).notNull().unique(),
   createdAt: timestamp().defaultNow().notNull(),
   updatedAt: timestamp().defaultNow().notNull(),
 });
@@ -104,5 +106,53 @@ export const paymentsTable = pgTable(
   (table) => ({
     paymentsOrgIdx: index("payments_org_idx").on(table.organizationId),
     paymentsUserIdx: index("payments_user_idx").on(table.userId),
+  }),
+);
+
+export const categoriesTable = pgTable("categories", {
+  id: uuid()
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  organizationId: uuid()
+    .notNull()
+    .references(() => organizationsTable.id, { onDelete: "cascade" }),
+  name: varchar({ length: 255 }).notNull(),
+  parentId: uuid().references((): AnyPgColumn => categoriesTable.id, {
+    onDelete: "cascade",
+  }),
+  categoryPhoto: varchar({ length: 255 }),
+  createdAt: timestamp().defaultNow().notNull(),
+  updatedAt: timestamp().defaultNow().notNull(),
+});
+
+export const productsTable = pgTable(
+  "products",
+  {
+    id: uuid()
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    organizationId: uuid()
+      .notNull()
+      .references(() => organizationsTable.id, { onDelete: "cascade" }),
+    name: varchar({ length: 255 }).notNull(),
+    description: varchar({ length: 1000 }),
+    price: integer().notNull(), // price in paisa
+    categoryId: uuid().references(() => categoriesTable.id, {
+      onDelete: "set null",
+    }),
+    imageUrl: varchar({ length: 500 }), // ImageKit URL
+    stock: integer().notNull().default(0),
+    createdAt: timestamp().defaultNow().notNull(),
+    updatedAt: timestamp().defaultNow().notNull(),
+  },
+  (table) => ({
+    productsOrgNameIdx: index("products_org_name_idx").on(
+      table.organizationId,
+      table.name,
+    ),
+    uniqueProductPerOrg: unique("unique_product_per_org").on(
+      table.organizationId,
+      table.name,
+    ),
   }),
 );
