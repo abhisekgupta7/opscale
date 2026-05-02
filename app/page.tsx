@@ -6,6 +6,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { PricingSection as BillingPricingSection } from "@/app/features/billing/components/pricing-section";
 
 const services = [
   {
@@ -226,127 +227,7 @@ function PricingSection() {
           </p>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-3">
-          {/* Starter Plan */}
-          <div className="rounded-2xl border-2 border-slate-200 bg-white p-10 hover:shadow-lg transition-all">
-            <div className="mb-8">
-              <h3 className="mb-2 text-2xl font-bold text-slate-900">
-                Starter
-              </h3>
-              <p className="text-base text-slate-600">
-                For small wholesale teams
-              </p>
-            </div>
-            <div className="mb-8">
-              <span className="text-5xl font-bold text-slate-900">$99</span>
-              <span className="text-slate-600 ml-2">/month</span>
-            </div>
-            <button className="w-full rounded-lg border-2 border-slate-300 bg-white px-6 py-3.5 text-base font-semibold text-slate-900 hover:bg-slate-50 transition-all">
-              Get Started
-            </button>
-            <ul className="mt-8 space-y-4">
-              <li className="flex items-center gap-3">
-                <div className="h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center">
-                  <div className="h-2 w-2 bg-blue-600 rounded-full" />
-                </div>
-                <span className="text-sm text-slate-700">Basic automation</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <div className="h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center">
-                  <div className="h-2 w-2 bg-blue-600 rounded-full" />
-                </div>
-                <span className="text-sm text-slate-700">
-                  Up to 1,000 transactions
-                </span>
-              </li>
-            </ul>
-          </div>
-
-          {/* Professional Plan - Highlighted */}
-          <div className="relative rounded-2xl border-2 border-blue-600 bg-linear-to-br from-blue-50 to-white p-10 shadow-xl">
-            <div className="absolute -top-5 left-1/2 -translate-x-1/2">
-              <span className="inline-block rounded-full border-2 border-blue-600 bg-white px-5 py-1.5 text-sm font-bold text-blue-600">
-                MOST POPULAR
-              </span>
-            </div>
-            <div className="mb-8 mt-4">
-              <h3 className="mb-2 text-2xl font-bold text-slate-900">
-                Professional
-              </h3>
-              <p className="text-base text-slate-600">For growing businesses</p>
-            </div>
-            <div className="mb-8">
-              <span className="text-5xl font-bold text-slate-900">$299</span>
-              <span className="text-slate-600 ml-2">/month</span>
-            </div>
-            <button className="w-full rounded-lg bg-linear-to-r from-blue-600 to-blue-700 px-6 py-3.5 text-base font-semibold text-white hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl">
-              Get Started Now
-            </button>
-            <ul className="mt-8 space-y-4">
-              <li className="flex items-center gap-3">
-                <div className="h-5 w-5 rounded-full bg-blue-200 flex items-center justify-center">
-                  <div className="h-2 w-2 bg-blue-600 rounded-full" />
-                </div>
-                <span className="text-sm text-slate-700">
-                  Advanced automation
-                </span>
-              </li>
-              <li className="flex items-center gap-3">
-                <div className="h-5 w-5 rounded-full bg-blue-200 flex items-center justify-center">
-                  <div className="h-2 w-2 bg-blue-600 rounded-full" />
-                </div>
-                <span className="text-sm text-slate-700">
-                  Unlimited transactions
-                </span>
-              </li>
-              <li className="flex items-center gap-3">
-                <div className="h-5 w-5 rounded-full bg-blue-200 flex items-center justify-center">
-                  <div className="h-2 w-2 bg-blue-600 rounded-full" />
-                </div>
-                <span className="text-sm text-slate-700">
-                  Priority 24/7 support
-                </span>
-              </li>
-            </ul>
-          </div>
-
-          {/* Enterprise Plan */}
-          <div className="rounded-2xl border-2 border-slate-200 bg-white p-10 hover:shadow-lg transition-all">
-            <div className="mb-8">
-              <h3 className="mb-2 text-2xl font-bold text-slate-900">
-                Enterprise
-              </h3>
-              <p className="text-base text-slate-600">
-                For large organizations
-              </p>
-            </div>
-            <div className="mb-8">
-              <span className="text-4xl font-bold text-slate-900">Custom</span>
-              <p className="text-sm text-slate-600 mt-2">
-                tailored to your needs
-              </p>
-            </div>
-            <button className="w-full rounded-lg border-2 border-slate-300 bg-white px-6 py-3.5 text-base font-semibold text-slate-900 hover:bg-slate-50 transition-all">
-              Contact Sales
-            </button>
-            <ul className="mt-8 space-y-4">
-              <li className="flex items-center gap-3">
-                <div className="h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center">
-                  <div className="h-2 w-2 bg-blue-600 rounded-full" />
-                </div>
-                <span className="text-sm text-slate-700">Custom solutions</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <div className="h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center">
-                  <div className="h-2 w-2 bg-blue-600 rounded-full" />
-                </div>
-                <span className="text-sm text-slate-700">
-                  Dedicated account manager
-                </span>
-              </li>
-            </ul>
-          </div>
-        </div>
+        <BillingPricingSection />
       </div>
     </section>
   );

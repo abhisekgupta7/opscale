@@ -1,0 +1,292 @@
+// features/billing/services/payment.services.ts
+
+import { db } from "@/lib/db/client";
+import { subscriptionsTable, paymentsTable } from "@/lib/db/schema";
+import { eq, and } from "drizzle-orm";
+
+// ============================================
+// SUBSCRIPTION SERVICES
+// ============================================
+
+/**
+ * Start a trial subscription for an organization
+ * Creates new subscription if doesn't exist, updates if it does
+ */
+export async function startTrial(organizationId: string) {
+  const trialEndDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+  // Check if subscription exists
+  const existingSubscription = await db
+    .select()
+    .from(subscriptionsTable)
+    .where(eq(subscriptionsTable.organizationId, organizationId))
+    .limit(1);
+
+  if (existingSubscription.length > 0) {
+    // Update existing subscription
+    const updated = await db
+      .update(subscriptionsTable)
+      .set({
+        plan: "PRO",
+        status: "ACTIVE",
+        currentPeriodEnd: trialEndDate,
+        updatedAt: new Date(),
+      })
+      .where(eq(subscriptionsTable.organizationId, organizationId))
+      .returning();
+    return updated[0];
+  } else {
+    // Create new subscription
+    const created = await db
+      .insert(subscriptionsTable)
+      .values({
+        organizationId,
+        plan: "PRO",
+        status: "ACTIVE",
+        currentPeriodEnd: trialEndDate,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+    return created[0];
+  }
+}
+
+/**
+ * Get subscription for an organization
+ */
+export async function getSubscription(organizationId: string) {
+  const subscription = await db
+    .select()
+    .from(subscriptionsTable)
+    .where(eq(subscriptionsTable.organizationId, organizationId))
+    .limit(1);
+
+  return subscription[0] || null;
+}
+
+/**
+ * Check if subscription is active and not expired
+ */
+export async function isSubscriptionActive(organizationId: string) {
+  const subscription = await getSubscription(organizationId);
+
+  if (!subscription) return false;
+  if (subscription.plan === "FREE") return false;
+  if (subscription.status !== "ACTIVE") return false;
+  if (
+    subscription.currentPeriodEnd &&
+    subscription.currentPeriodEnd < new Date()
+  )
+    return false;
+
+  return true;
+}
+
+// ============================================
+// PAYMENT SERVICES
+// ============================================
+
+/**
+ * Check if organization has existing pending payment
+ */
+export async function getPendingPayment(organizationId: string) {
+  const existing = await db
+    .select()
+    .from(paymentsTable)
+    .where(
+      and(
+        eq(paymentsTable.organizationId, organizationId),
+        eq(paymentsTable.status, "PENDING"),
+      ),
+    )
+    .limit(1);
+
+  return existing[0] || null;
+}
+
+/**
+ * Submit manual payment
+ * - Checks for existing pending payments
+ * - Creates payment record with PENDING status
+ */
+export async function submitManualPayment(
+  organizationId: string,
+  userId: string,
+  proofUrl: string,
+  amount: number = 100 * 1000 * 15, // Rs. 15,000 in paisa (default)
+  currency: string = "NPR",
+) {
+  // Check for existing pending payment
+  const existingPayment = await getPendingPayment(organizationId);
+  if (existingPayment) {
+    throw new Error(
+      "You already have a pending payment. Please wait for verification.",
+    );
+  }
+
+  if (!proofUrl) {
+    throw new Error("Proof URL is required");
+  }
+
+  // Create payment record
+  const created = await db
+    .insert(paymentsTable)
+    .values({
+      organizationId,
+      userId,
+      provider: "MANUAL",
+      amount,
+      currency,
+      status: "PENDING",
+      proofUrl,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .returning();
+
+  return created[0];
+}
+
+/**
+ * Get payment by ID
+ */
+export async function getPayment(paymentId: string) {
+  const payment = await db
+    .select()
+    .from(paymentsTable)
+    .where(eq(paymentsTable.id, paymentId))
+    .limit(1);
+
+  return payment[0] || null;
+}
+
+/**
+ * Get all payments for organization
+ */
+export async function getPaymentsByOrganization(organizationId: string) {
+  const payments = await db
+    .select()
+    .from(paymentsTable)
+    .where(eq(paymentsTable.organizationId, organizationId));
+
+  return payments;
+}
+
+/**
+ * Update payment status (for admin verification)
+ * Can transition: PENDING -> VERIFIED | REJECTED
+ * VERIFIED payments will trigger subscription upgrade
+ */
+export async function updatePaymentStatus(
+  paymentId: string,
+  status: "VERIFIED" | "REJECTED" | "COMPLETED",
+) {
+  const updated = await db
+    .update(paymentsTable)
+    .set({
+      status,
+      updatedAt: new Date(),
+    })
+    .where(eq(paymentsTable.id, paymentId))
+    .returning();
+
+  return updated[0];
+}
+
+/**
+ * Activate subscription after payment verification
+ * This should be called after admin verifies a payment
+ */
+export async function activateSubscriptionAfterPayment(
+  organizationId: string,
+  planDurationDays: number = 30,
+) {
+  const currentPeriodEnd = new Date(
+    Date.now() + planDurationDays * 24 * 60 * 60 * 1000,
+  );
+
+  const updated = await db
+    .update(subscriptionsTable)
+    .set({
+      plan: "PRO",
+      status: "ACTIVE",
+      currentPeriodEnd,
+      updatedAt: new Date(),
+    })
+    .where(eq(subscriptionsTable.organizationId, organizationId))
+    .returning();
+
+  return updated[0];
+}
+
+// ============================================
+// FUTURE ESEWA INTEGRATION HELPER
+// ============================================
+
+/**
+ * Create ESewa payment record
+ * This will be used for ESewa payment processing
+ */
+export async function createEsewaPayment(
+  organizationId: string,
+  userId: string,
+  amount: number,
+  currency: string = "NPR",
+) {
+  const created = await db
+    .insert(paymentsTable)
+    .values({
+      organizationId,
+      userId,
+      provider: "ESEWA",
+      amount,
+      currency,
+      status: "PENDING", // Will transition to COMPLETED when ESewa verifies
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .returning();
+
+  return created[0];
+}
+
+/**
+ * Verify ESewa payment callback
+ * Updates payment status and activates subscription
+ */
+export async function verifyEsewaPayment(
+  pidx: string,
+  status: string,
+  transactionId: string,
+) {
+  // Find payment by pidx
+  const payments = await db
+    .select()
+    .from(paymentsTable)
+    .where(eq(paymentsTable.pidx, pidx))
+    .limit(1);
+
+  if (payments.length === 0) {
+    throw new Error("Payment not found");
+  }
+
+  const payment = payments[0];
+
+  if (status === "COMPLETED") {
+    // Update payment
+    await db
+      .update(paymentsTable)
+      .set({
+        status: "COMPLETED",
+        reference: transactionId,
+        updatedAt: new Date(),
+      })
+      .where(eq(paymentsTable.id, payment.id));
+
+    // Activate subscription
+    await activateSubscriptionAfterPayment(payment.organizationId);
+  }
+
+  return payment;
+}
