@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import ImageUploader from "@/components/Utility/ImageUploader";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -67,14 +68,30 @@ export default function ProductForm({ categories = [] }: ProductFormProps) {
   };
 
   return (
-    <div className="max-w-2xl space-y-6">
-      <h2 className="text-2xl font-semibold">Create Product</h2>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <div className="w-full max-w-2xl">
+      <Card className="border border-border shadow-sm">
+        <CardContent className="space-y-6 p-6">
+          <div className="space-y-2">
+            <div className="inline-flex w-fit items-center rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Products
+            </div>
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+              Create product
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Add a product to your catalog with pricing, stock, and an optional photo.
+            </p>
+          </div>
+
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="name">Name</Label>
+          <Label htmlFor="name" className="text-sm text-foreground">
+            Name
+          </Label>
           <Input
             id="name"
             placeholder="Product name"
+            className="h-9"
             {...form.register("name")}
           />
           {form.formState.errors.name && (
@@ -85,11 +102,13 @@ export default function ProductForm({ categories = [] }: ProductFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="description">Description</Label>
+          <Label htmlFor="description" className="text-sm text-foreground">
+            Description
+          </Label>
           <textarea
             id="description"
             rows={4}
-            className="w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-base transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 md:text-sm"
+            className="min-h-24 w-full rounded-lg border border-input bg-background px-2.5 py-2 text-base transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 md:text-sm"
             placeholder="Short product description"
             {...form.register("description")}
           />
@@ -102,11 +121,14 @@ export default function ProductForm({ categories = [] }: ProductFormProps) {
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="price">Price</Label>
+            <Label htmlFor="price" className="text-sm text-foreground">
+              Price
+            </Label>
             <Input
               id="price"
               type="number"
               min={0}
+              className="h-9"
               {...form.register("price", { valueAsNumber: true })}
             />
             {form.formState.errors.price && (
@@ -117,11 +139,14 @@ export default function ProductForm({ categories = [] }: ProductFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="stock">Stock</Label>
+            <Label htmlFor="stock" className="text-sm text-foreground">
+              Stock
+            </Label>
             <Input
               id="stock"
               type="number"
               min={0}
+              className="h-9"
               {...form.register("stock", { valueAsNumber: true })}
             />
             {form.formState.errors.stock && (
@@ -133,10 +158,12 @@ export default function ProductForm({ categories = [] }: ProductFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="categoryId">Category</Label>
+          <Label htmlFor="categoryId" className="text-sm text-foreground">
+            Category
+          </Label>
           <select
             id="categoryId"
-            className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm"
+            className="h-9 w-full rounded-lg border border-input bg-background px-2.5 py-1 text-base transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm"
             {...form.register("categoryId")}
           >
             <option value="">Select a category</option>
@@ -146,7 +173,7 @@ export default function ProductForm({ categories = [] }: ProductFormProps) {
               </option>
             ))}
           </select>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             {categories.length
               ? "Optional: assign a category"
               : "No categories available yet"}
@@ -159,7 +186,7 @@ export default function ProductForm({ categories = [] }: ProductFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label>Product Photo</Label>
+          <Label className="text-sm text-foreground">Product photo</Label>
           <ImageUploader
             onUploadComplete={handleUploadComplete}
             onError={handleUploadError}
@@ -174,9 +201,11 @@ export default function ProductForm({ categories = [] }: ProductFormProps) {
         </div>
 
         <Button type="submit" disabled={form.formState.isSubmitting}>
-          {form.formState.isSubmitting ? "Creating..." : "Create Product"}
+          {form.formState.isSubmitting ? "Creating..." : "Create product"}
         </Button>
-      </form>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

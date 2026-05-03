@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
-import { DM_Sans } from "next/font/google";
+import { Manrope } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Utility/Navbar";
 import Footer from "@/components/Utility/Footer";
 import { Toaster } from "@/components/ui/sonner";
 
-const dmsans = DM_Sans({
-  variable: "--font-geist-sans",
+const manrope = Manrope({
+  variable: "--font-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -24,9 +25,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${dmsans.variable} h-full antialiased scroll-smooth`}
+      className={`${manrope.variable} h-full antialiased scroll-smooth`}
     >
-      <body className="min-h-full flex flex-col bg-linear-to-br from-white via-blue-50/30 to-slate-50">
+      <body className="min-h-full flex flex-col bg-linear-to-b from-background via-background to-muted/30">
         <Navbar />
         <main className="grow">{children}</main>
         <Footer />
