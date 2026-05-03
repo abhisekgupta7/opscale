@@ -4,9 +4,11 @@ import {
   timestamp,
   pgTable,
   integer,
+  boolean,
   index,
   unique,
   type AnyPgColumn,
+  pgEnum,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -27,6 +29,22 @@ export const organizationsTable = pgTable("organizations", {
     .primaryKey()
     .default(sql`gen_random_uuid()`),
   name: varchar({ length: 255 }).notNull().unique(),
+  createdAt: timestamp().defaultNow().notNull(),
+  updatedAt: timestamp().defaultNow().notNull(),
+});
+
+export const organizationConfigTable = pgTable("organization_config", {
+  id: uuid()
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  organizationId: uuid()
+    .notNull().unique()
+    .references(() => organizationsTable.id, { onDelete: "cascade" }),
+  paymentMethod: varchar({ length: 50 }).notNull().default("MANUAL"), // MANUAL | ESEWA
+  qrCodeUrl: varchar({ length: 255 }), // ImageKit URL for QR code (if using ESEWA)
+  isActive: boolean().notNull().default(true),
+  key: varchar({ length: 255 }).notNull(),
+  value: varchar({ length: 1000 }),
   createdAt: timestamp().defaultNow().notNull(),
   updatedAt: timestamp().defaultNow().notNull(),
 });
@@ -66,39 +84,59 @@ export const subscriptionsTable = pgTable("subscriptions", {
   updatedAt: timestamp().defaultNow().notNull(),
 });
 
+export const referenceTypeEnum = pgEnum("payment_reference_type", [
+  "ORDER",
+  "SUBSCRIPTION",
+])
+export const paymentProviderEnum = pgEnum("payment_provider", [
+  "MANUAL",
+  "ESEWA",
+])
+
+export const paymentStatusEnum = pgEnum("payment_status", [
+  "PENDING",
+  "VERIFIED",
+  "REJECTED",
+
+])
+
+export const paymentContextEnum = pgEnum("payment_context", [
+  "PLATFORM",
+  "ORG",
+])
+
 export const paymentsTable = pgTable(
   "payments",
   {
-    id: uuid()
-      .primaryKey()
-      .default(sql`gen_random_uuid()`),
+    id: uuid().primaryKey().default(sql`gen_random_uuid()`),
 
-    organizationId: uuid()
-      .notNull()
-      .references(() => organizationsTable.id, { onDelete: "cascade" }),
+    organizationId: uuid().references(() => organizationsTable.id),
 
-    userId: uuid()
-      .notNull()
-      .references(() => usersTable.id, { onDelete: "cascade" }),
+    userId: uuid().notNull().references(() => usersTable.id),
 
-    // 🔥 provider abstraction
-    provider: varchar({ length: 50 }).notNull().default("MANUAL"), // MANUAL | ESewa
+    customerId: uuid().references(() => customerTable.id, {
+      onDelete: "set null",
+    }),
 
-    // 🔥 payment identifier
-    pidx: varchar({ length: 255 }).unique(), // nullable for manual
+    context: paymentContextEnum().notNull(),
 
-    // 💰 amount in paisa
+    provider: paymentProviderEnum().notNull().default("MANUAL"),
+
+    pidx: varchar({ length: 255 }),
+
     amount: integer().notNull(),
 
     currency: varchar({ length: 10 }).notNull().default("NPR"),
 
-    // 🔥 status lifecycle
-    status: varchar({ length: 50 }).notNull().default("PENDING"), // PENDING | VERIFIED | REJECTED | COMPLETED
+    status: paymentStatusEnum().notNull().default("PENDING"),
 
-    // 📸 manual payment proof
-    proofUrl: varchar({ length: 255 }), // screenshot
+    proofUrl: varchar({ length: 255 }),
 
-    reference: varchar({ length: 255 }), // txn id (optional)
+    referenceType: referenceTypeEnum(),
+    referenceId: varchar({ length: 255 }),
+
+    verifiedAt: timestamp(),
+    verifiedBy: uuid().references(() => usersTable.id),
 
     createdAt: timestamp().defaultNow().notNull(),
     updatedAt: timestamp().defaultNow().notNull(),
@@ -106,8 +144,14 @@ export const paymentsTable = pgTable(
   (table) => ({
     paymentsOrgIdx: index("payments_org_idx").on(table.organizationId),
     paymentsUserIdx: index("payments_user_idx").on(table.userId),
-  }),
-);
+    paymentsCustomerIdx: index("payments_customer_idx").on(table.customerId),
+
+    uniqueProviderPidx: unique("unique_provider_pidx").on(
+      table.provider,
+      table.pidx
+    ),
+  })
+)
 
 export const categoriesTable = pgTable("categories", {
   id: uuid()
@@ -175,9 +219,9 @@ export const ordersTable = pgTable("orders", {
 
 export const orderItemsTable = pgTable("order_items", {
   id: uuid()
-    .primaryKey() 
+    .primaryKey()
     .default(sql`gen_random_uuid()`),
-  orderId: uuid() 
+  orderId: uuid()
     .notNull()
     .references(() => ordersTable.id, { onDelete: "cascade" }),
   productId: uuid()
@@ -192,7 +236,7 @@ export const customerTable = pgTable("customers", {
     .primaryKey()
     .default(sql`gen_random_uuid()`),
   organizationId: uuid()
-    .notNull()  
+    .notNull()
     .references(() => organizationsTable.id, { onDelete: "cascade" }),
   name: varchar({ length: 255 }).notNull(),
   email: varchar({ length: 255 }).notNull(),
@@ -200,3 +244,28 @@ export const customerTable = pgTable("customers", {
   createdAt: timestamp().defaultNow().notNull(),
   updatedAt: timestamp().defaultNow().notNull(),
 });
+
+export const ledgerEntriesTable = pgTable(
+  "ledger_entries",
+  {
+    id: uuid()
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    organizationId: uuid()
+      .notNull()
+      .references(() => organizationsTable.id, { onDelete: "cascade" }),
+    type: varchar({ length: 50 }).notNull(), // DEBIT | CREDIT
+    amount: integer().notNull(), // in paisa
+    description: varchar({ length: 500 }),
+    referenceId: uuid(), // order ID, payment ID, etc.
+    referenceType: varchar({ length: 50 }), // ORDER, PAYMENT, REFUND, etc.
+    createdAt: timestamp().defaultNow().notNull(),
+  },
+  (table) => ({
+    ledgerOrgIdx: index("ledger_org_idx").on(table.organizationId),
+    ledgerReferenceIdx: index("ledger_reference_idx").on(
+      table.referenceId,
+      table.referenceType,
+    ),
+  }),
+);

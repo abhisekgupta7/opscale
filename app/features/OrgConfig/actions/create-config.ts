@@ -1,0 +1,69 @@
+"use server";
+
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import {
+  createOrganizationConfigSchema,
+  type CreateOrganizationConfigInput,
+} from "../types/config.types";
+import {
+  createOrganizationConfig,
+  getOrganizationConfigByOrg,
+} from "../service/config.services";
+
+export async function createOrganizationConfigAction(
+  input: CreateOrganizationConfigInput,
+) {
+  const parsed = createOrganizationConfigSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: "Invalid organization config data",
+      errors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.activeOrgId) {
+      return {
+        success: false,
+        message: "No active organization found. Please log in first.",
+      };
+    }
+
+    const organizationId = session.user.activeOrgId;
+    const existing = await getOrganizationConfigByOrg(organizationId);
+    if (existing) {
+      return {
+        success: false,
+        message: "Organization config already exists.",
+      };
+    }
+
+    const data = {
+      paymentMethod: parsed.data.paymentMethod,
+      qrCodeUrl: parsed.data.qrCodeUrl?.trim() || "",
+      isActive: parsed.data.isActive,
+      key: parsed.data.key.trim(),
+      value: parsed.data.value?.trim() || "",
+    };
+
+    const created = await createOrganizationConfig(organizationId, data);
+
+    return {
+      success: true,
+      message: "Organization config created successfully",
+      data: created,
+    };
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to create organization config";
+    return {
+      success: false,
+      message,
+    };
+  }
+}

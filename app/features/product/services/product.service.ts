@@ -102,3 +102,15 @@ export async function updateProductInDb(
 
   return result;
 }
+
+/**
+ * Get all products for an organization
+ */
+export async function getProductsByOrg(organizationId: string) {
+  const products = await db
+    .select()
+    .from(productsTable)
+    .where(eq(productsTable.organizationId, organizationId));
+
+  return products;
+}
