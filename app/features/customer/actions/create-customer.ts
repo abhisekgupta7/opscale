@@ -1,7 +1,6 @@
 "use server";
 
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { requireActiveOrgContext } from "@/app/features/auth/services/org-context.service";
 import {
   createCustomerSchema,
   type CreateCustomerInput,
@@ -23,16 +22,8 @@ export async function createCustomer(input: CreateCustomerInput) {
   }
 
   try {
-    // ✅ Get organization context from session
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.activeOrgId) {
-      return {
-        success: false,
-        message: "No active organization found. Please log in first.",
-      };
-    }
-
-    const organizationId = session.user.activeOrgId;
+    // ✅ Get organization context once via shared helper
+    const { orgId: organizationId } = await requireActiveOrgContext();
 
     // ✅ Check if customer email already exists in this organization
     const existing = await checkExistingCustomerByEmail(

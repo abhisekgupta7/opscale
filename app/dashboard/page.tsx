@@ -1,80 +1,119 @@
 import { ArrowDownRight, ArrowUpRight, CircleDot } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { getAllOrdersForOrg } from "@/app/features/order/actions/get-all-orders";
+import { getAllCustomersForOrg } from "@/app/features/customer/actions/get-all-customers";
+import { getAllProductsForOrg } from "@/app/features/product/actions/get-all-products";
+import { getOrganizationPayments } from "@/app/features/billing/actions/get-org-payments";
+import { getLedgerSummaryForOrg } from "@/app/features/ledger/actions/get-ledger-summary";
 
-const summaryCards = [
-  {
-    label: "Total Sales",
-    value: "Rs. 18.4L",
-    delta: "+12.4%",
-    trend: "up",
-    meta: "vs last 30 days",
-  },
-  {
-    label: "Outstanding Due",
-    value: "Rs. 4.7L",
-    delta: "-6.2%",
-    trend: "down",
-    meta: "aging 30+ days",
-  },
-  {
-    label: "Payments Received",
-    value: "Rs. 9.1L",
-    delta: "+4.8%",
-    trend: "up",
-    meta: "last 7 days",
-  },
-];
+type DashboardOrderRow = {
+  id: string;
+  customerName: string;
+  totalAmount: number;
+  status: string;
+  createdAt: Date;
+};
 
-const recentOrders = [
-  {
-    id: "ORD-1042",
-    customer: "Khandelwal Traders",
-    total: "Rs. 1,24,800",
-    status: "PENDING",
-    date: "May 2, 2026",
-  },
-  {
-    id: "ORD-1041",
-    customer: "Nexline Distributors",
-    total: "Rs. 98,200",
-    status: "VERIFIED",
-    date: "May 2, 2026",
-  },
-  {
-    id: "ORD-1040",
-    customer: "Shreeji Wholesale",
-    total: "Rs. 76,500",
-    status: "VERIFIED",
-    date: "May 1, 2026",
-  },
-  {
-    id: "ORD-1039",
-    customer: "Aarav Stores",
-    total: "Rs. 58,900",
-    status: "PENDING",
-    date: "May 1, 2026",
-  },
-];
+type DashboardPaymentRow = {
+  amount: number;
+  status: string;
+};
 
-const balancePreview = [
-  {
-    customer: "Radiant Mart",
-    outstanding: "Rs. 62,300",
-    limit: "Rs. 2.0L",
-  },
-  {
-    customer: "Sapphire Traders",
-    outstanding: "Rs. 41,150",
-    limit: "Rs. 1.4L",
-  },
-  {
-    customer: "Nira Enterprises",
-    outstanding: "Rs. 29,800",
-    limit: "Rs. 1.2L",
-  },
-];
+type LedgerSummary = {
+  totalDebit: number;
+  totalCredit: number;
+  balance: number;
+  entryCount: number;
+  entries: Array<{
+    id: string;
+    createdAt: Date;
+  }>;
+};
 
-export default function DashboardPage() {
+function formatCurrency(amountInPaisa: number) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "NPR",
+    maximumFractionDigits: 0,
+  }).format(amountInPaisa / 100);
+}
+
+export default async function DashboardPage() {
+  const [
+    ordersResult,
+    customersResult,
+    productsResult,
+    paymentsResult,
+    ledgerResult,
+  ] = await Promise.all([
+    getAllOrdersForOrg(),
+    getAllCustomersForOrg(),
+    getAllProductsForOrg(),
+    getOrganizationPayments(),
+    getLedgerSummaryForOrg(),
+  ]);
+
+  const orders: DashboardOrderRow[] = ordersResult.success
+    ? (ordersResult.orders as DashboardOrderRow[])
+    : [];
+  const customers = customersResult.success ? customersResult.customers : [];
+  const products = productsResult.success ? productsResult.products : [];
+  const payments: DashboardPaymentRow[] = paymentsResult.success
+    ? (paymentsResult.payments as DashboardPaymentRow[])
+    : [];
+  const ledgerSummary: LedgerSummary =
+    ledgerResult.success && ledgerResult.data
+      ? (ledgerResult.data as LedgerSummary)
+      : {
+          totalDebit: 0,
+          totalCredit: 0,
+          balance: 0,
+          entryCount: 0,
+          entries: [],
+        };
+
+  const totalSales = orders.reduce(
+    (sum: number, order: DashboardOrderRow) => sum + order.totalAmount,
+    0,
+  );
+  const pendingOrders = orders.filter(
+    (order: DashboardOrderRow) => order.status === "PENDING",
+  ).length;
+  const verifiedPayments = payments.filter(
+    (payment: DashboardPaymentRow) =>
+      payment.status === "VERIFIED" || payment.status === "COMPLETED",
+  );
+  const paymentsReceived = verifiedPayments.reduce(
+    (sum: number, payment: DashboardPaymentRow) => sum + payment.amount,
+    0,
+  );
+
+  const summaryCards = [
+    {
+      label: "Total Sales",
+      value: formatCurrency(totalSales),
+      delta: `${orders.length} orders`,
+      trend: "up",
+      meta: "From all recorded orders",
+    },
+    {
+      label: "Outstanding Due",
+      value: formatCurrency(ledgerSummary.totalDebit),
+      delta: `${pendingOrders} pending`,
+      trend: pendingOrders > 0 ? "up" : "down",
+      meta: "Based on pending debit entries",
+    },
+    {
+      label: "Payments Received",
+      value: formatCurrency(paymentsReceived),
+      delta: `${verifiedPayments.length} verified`,
+      trend: "up",
+      meta: "Verified and completed payments",
+    },
+  ];
+
+  const recentOrders = orders.slice(0, 6);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -84,7 +123,7 @@ export default function DashboardPage() {
           </p>
           <h1 className="text-2xl font-semibold text-foreground">Dashboard</h1>
           <p className="text-sm text-muted-foreground">
-            Track orders, payments, and customer balances at a glance.
+            Real-time overview across orders, customers, products, and ledger.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -96,7 +135,7 @@ export default function DashboardPage() {
             Live
           </Badge>
           <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-muted-foreground">
-            Updated 2m ago
+            Updated now
           </div>
         </div>
       </div>
@@ -140,12 +179,12 @@ export default function DashboardPage() {
                 Recent Orders
               </p>
               <p className="text-xs text-muted-foreground">
-                Latest activity across wholesale accounts
+                Latest org order activity
               </p>
             </div>
-            <button className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-white/10">
-              View all
-            </button>
+            <div className="text-xs text-muted-foreground">
+              {recentOrders.length} latest
+            </div>
           </div>
 
           <div className="mt-4 overflow-hidden rounded-lg border border-white/10">
@@ -160,20 +199,22 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/10">
-                {recentOrders.map((order) => (
+                {recentOrders.map((order: DashboardOrderRow) => (
                   <tr key={order.id} className="bg-transparent">
                     <td className="px-4 py-3 font-medium text-foreground">
-                      {order.id}
+                      {order.id.slice(0, 8)}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
-                      {order.customer}
+                      {order.customerName}
                     </td>
-                    <td className="px-4 py-3 text-foreground">{order.total}</td>
+                    <td className="px-4 py-3 text-foreground">
+                      {formatCurrency(order.totalAmount)}
+                    </td>
                     <td className="px-4 py-3">
                       <Badge
                         variant="outline"
                         className={
-                          order.status === "VERIFIED"
+                          order.status === "COMPLETED"
                             ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300"
                             : "border-amber-400/40 bg-amber-400/10 text-amber-300"
                         }
@@ -182,10 +223,20 @@ export default function DashboardPage() {
                       </Badge>
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
-                      {order.date}
+                      {new Date(order.createdAt).toLocaleDateString()}
                     </td>
                   </tr>
                 ))}
+                {recentOrders.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="px-4 py-8 text-center text-sm text-muted-foreground"
+                    >
+                      No recent orders to display.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -195,43 +246,45 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-semibold text-foreground">
-                Customer Balances
+                Data Snapshot
               </p>
               <p className="text-xs text-muted-foreground">
-                Highest outstanding exposure
+                Core entities in the active organization
               </p>
             </div>
-            <button className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-white/10">
-              Open ledger
-            </button>
+            <div className="text-xs text-muted-foreground">Live</div>
           </div>
 
           <div className="mt-4 space-y-3">
-            {balancePreview.map((balance) => (
+            {[
+              { label: "Customers", value: customers.length },
+              { label: "Products", value: products.length },
+              { label: "Payments", value: payments.length },
+            ].map((item) => (
               <div
-                key={balance.customer}
+                key={item.label}
                 className="flex items-center justify-between rounded-lg border border-white/10 bg-[#0f141b] p-3"
               >
                 <div>
                   <p className="text-sm font-medium text-foreground">
-                    {balance.customer}
+                    {item.label}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Credit limit {balance.limit}
+                    Active organization total
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-semibold text-foreground">
-                    {balance.outstanding}
+                    {item.value}
                   </p>
-                  <p className="text-xs text-muted-foreground">Outstanding</p>
+                  <p className="text-xs text-muted-foreground">Records</p>
                 </div>
               </div>
             ))}
           </div>
 
           <div className="mt-4 rounded-lg border border-emerald-400/30 bg-emerald-400/10 p-3 text-xs text-emerald-200">
-            Strong collections this week. 68% of dues cleared within 48 hours.
+            Net ledger balance: {formatCurrency(ledgerSummary.balance)}.
           </div>
         </div>
       </div>

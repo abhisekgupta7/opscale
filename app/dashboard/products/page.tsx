@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getAllOrdersForOrg } from "@/app/features/order/actions/get-all-orders";
+import { getAllProductsForOrg } from "@/app/features/product/actions/get-all-products";
 
 function formatCurrency(amountInPaisa: number) {
   return new Intl.NumberFormat("en-IN", {
@@ -11,107 +10,80 @@ function formatCurrency(amountInPaisa: number) {
   }).format(amountInPaisa / 100);
 }
 
-type OrdersPageProps = {
+type ProductsPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-type OrderRow = {
-  id: string;
-  customerId: string;
-  customerName: string;
-  totalAmount: number;
-  status: string;
-  createdAt: Date;
-};
-
-export default async function OrdersPage({ searchParams }: OrdersPageProps) {
+export default async function ProductsPage({
+  searchParams,
+}: ProductsPageProps) {
   const resolvedSearchParams = await searchParams;
   const rawQuery = resolvedSearchParams?.q;
   const query = typeof rawQuery === "string" ? rawQuery.trim() : "";
-
-  const result = await getAllOrdersForOrg(query);
-  const orders: OrderRow[] = result.success
-    ? (result.orders as OrderRow[])
-    : [];
+  const result = await getAllProductsForOrg(query);
+  const products = result.success ? result.products : [];
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            Orders
+            Products
           </p>
           <h1 className="text-2xl font-semibold text-foreground">
-            Orders Overview
+            Product Catalog
           </h1>
           <p className="text-sm text-muted-foreground">
-            Live orders from your active organization.
+            Live products from your active organization inventory.
           </p>
         </div>
         <Button
           asChild
           className="h-9 bg-emerald-400 text-emerald-950 hover:bg-emerald-300"
         >
-          <Link href="/dashboard/orders/create">Create order</Link>
+          <Link href="/dashboard/products/create">Create product</Link>
         </Button>
       </div>
 
       <div className="rounded-xl border border-white/10 bg-white/5">
         <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-          <p className="text-sm font-semibold text-foreground">Recent Orders</p>
+          <p className="text-sm font-semibold text-foreground">Products</p>
           <div className="text-xs text-muted-foreground">
-            {orders.length} records
+            {products.length} records
           </div>
         </div>
         <div className="overflow-hidden">
           <table className="w-full text-left text-sm">
             <thead className="bg-white/5 text-xs uppercase tracking-[0.16em] text-muted-foreground">
               <tr>
-                <th className="px-4 py-3 font-medium">Order ID</th>
-                <th className="px-4 py-3 font-medium">Customer</th>
-                <th className="px-4 py-3 font-medium">Total</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Date</th>
+                <th className="px-4 py-3 font-medium">Name</th>
+                <th className="px-4 py-3 font-medium">Price</th>
+                <th className="px-4 py-3 font-medium">Stock</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/10">
-              {orders.map((order) => (
-                <tr key={order.id}>
-                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
-                    {order.id.slice(0, 8)}
-                  </td>
+              {products.map((product) => (
+                <tr key={product.id}>
                   <td className="px-4 py-3 font-medium text-foreground">
-                    {order.customerName}
+                    {product.name}
                   </td>
                   <td className="px-4 py-3 text-foreground">
-                    {formatCurrency(order.totalAmount)}
-                  </td>
-                  <td className="px-4 py-3">
-                    <Badge
-                      variant="outline"
-                      className={
-                        order.status === "COMPLETED"
-                          ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300"
-                          : "border-amber-400/40 bg-amber-400/10 text-amber-300"
-                      }
-                    >
-                      {order.status}
-                    </Badge>
+                    {formatCurrency(product.price)}
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
-                    {new Date(order.createdAt).toLocaleDateString()}
+                    {product.stock}
                   </td>
                 </tr>
               ))}
-              {orders.length === 0 && (
+              {products.length === 0 && (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={3}
                     className="px-4 py-8 text-center text-sm text-muted-foreground"
                   >
                     {result.success
-                      ? "No orders found for this organization."
-                      : result.message || "Unable to load orders."}
+                      ? "No products found for this organization."
+                      : result.message || "Unable to load products."}
                   </td>
                 </tr>
               )}

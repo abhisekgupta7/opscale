@@ -23,30 +23,34 @@ export async function createOrganizationWithMembership(
   role: MembershipRole = "OWNER",
 ) {
   try {
-    // Create organization
-    const [organization] = await db
-      .insert(organizationsTable)
-      .values({
-        name: organizationName,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .returning();
+    const baseName = organizationName.trim() || "Business";
+    const uniqueOrganizationName = `${baseName} (${userId.slice(0, 8)})`;
 
-    // Create membership
-    const [membership] = await db
-      .insert(membershipsTable)
-      .values({
-        userId,
-        organizationId: organization.id,
-        role,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .returning();
+    return await db.transaction(async (tx: any) => {
+      const [organization] = await tx
+        .insert(organizationsTable)
+        .values({
+          name: uniqueOrganizationName,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .returning();
 
-    return { organization, membership };
+      const [membership] = await tx
+        .insert(membershipsTable)
+        .values({
+          userId,
+          organizationId: organization.id,
+          role,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .returning();
+
+      return { organization, membership };
+    });
   } catch (error) {
+    console.error("Failed to create organization with membership:", error);
     throw new Error("Failed to create organization");
   }
 }

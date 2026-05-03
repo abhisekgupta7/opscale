@@ -2,21 +2,20 @@
 
 "use server";
 
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getActiveOrgId } from "@/app/features/auth/services/org-context.service";
 import { startTrial } from "../services/payment.services";
 
 export async function startTrialAction() {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.activeOrgId) {
+    const organizationId = await getActiveOrgId();
+    if (!organizationId) {
       return {
         success: false,
         message: "No active organization found. Please log in first.",
       };
     }
 
-    await startTrial(session.user.activeOrgId);
+    await startTrial(organizationId);
 
     return { success: true, message: "Trial started successfully! 🎉" };
   } catch (error) {

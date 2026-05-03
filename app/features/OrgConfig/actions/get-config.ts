@@ -1,13 +1,12 @@
 "use server";
 
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getActiveOrgId } from "@/app/features/auth/services/org-context.service";
 import { getOrganizationConfigByOrg } from "../service/config.services";
 
 export async function getOrganizationConfigAction() {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.activeOrgId) {
+    const organizationId = await getActiveOrgId();
+    if (!organizationId) {
       return {
         success: false,
         message: "No active organization found. Please log in first.",
@@ -15,7 +14,7 @@ export async function getOrganizationConfigAction() {
       };
     }
 
-    const config = await getOrganizationConfigByOrg(session.user.activeOrgId);
+    const config = await getOrganizationConfigByOrg(organizationId);
 
     return {
       success: true,

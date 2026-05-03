@@ -22,7 +22,26 @@ async function enrichUserWithOrg(userEmail: string) {
   try {
     const userRecord = await findUserByEmail(userEmail);
     if (userRecord) {
-      const activeOrg = await getActiveOrgForUser(userRecord.id);
+      let activeOrg;
+      try {
+        activeOrg = await getActiveOrgForUser(userRecord.id);
+      } catch (error) {
+        // Backfill older users that exist without an organization membership.
+        if (
+          error instanceof Error &&
+          error.message === "No organization found for user"
+        ) {
+          await createOrganizationWithMembership(
+            userRecord.id,
+            `${userRecord.name || "Business"}'s Business`,
+            "OWNER",
+          );
+          activeOrg = await getActiveOrgForUser(userRecord.id);
+        } else {
+          throw error;
+        }
+      }
+
       return {
         activeOrgId: activeOrg.organizationId,
         role: activeOrg.role as "OWNER" | "ADMIN" | "MEMBER",

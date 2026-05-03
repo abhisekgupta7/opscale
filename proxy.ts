@@ -14,9 +14,20 @@ export default withAuth(
   },
   {
     callbacks: {
-      authorized({ token }) {
-        // If token exists, user is authenticated
-        return !!token;
+      authorized({ req, token }) {
+        if (!token) return false;
+
+        const pathname = req.nextUrl.pathname;
+        const requiresActiveOrg =
+          pathname.startsWith("/dashboard") ||
+          pathname.startsWith("/settings") ||
+          pathname.startsWith("/org");
+
+        if (requiresActiveOrg) {
+          return !!token.activeOrgId;
+        }
+
+        return true;
       },
     },
     pages: {

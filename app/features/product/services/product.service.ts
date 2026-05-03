@@ -106,7 +106,9 @@ export async function updateProductInDb(
 /**
  * Get all products for an organization
  */
-export async function getProductsByOrg(organizationId: string) {
+export async function getProductsByOrg(
+  organizationId: string,
+): Promise<(typeof productsTable.$inferSelect)[]> {
   const products = await db
     .select()
     .from(productsTable)

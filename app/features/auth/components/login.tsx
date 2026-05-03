@@ -55,34 +55,22 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="w-full rounded-2xl border border-border bg-card p-6 shadow-sm">
-      <div className="mb-6 space-y-2">
-        <div className="inline-flex w-fit items-center rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Sign in
-        </div>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-          Welcome back
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Sign in to continue managing your wholesale operations.
-        </p>
-      </div>
-
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+    <div className="w-full rounded-2xl border border-white/10 bg-white/5 p-8 shadow-sm">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
         {/* Email Field */}
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-sm text-foreground">
+          <Label htmlFor="email" className="text-sm font-medium text-slate-200">
             Email
           </Label>
           <Input
             id="email"
             type="email"
-            placeholder="Enter your email"
-            className="h-9"
+            placeholder="you@example.com"
+            className="h-10 border-white/10 bg-white/5 text-slate-100 placeholder-slate-500 focus:border-emerald-400 focus:ring-emerald-400"
             {...form.register("email")}
           />
           {form.formState.errors.email && (
-            <p className="text-xs text-red-500">
+            <p className="text-xs text-red-400">
               {form.formState.errors.email.message}
             </p>
           )}
@@ -90,18 +78,21 @@ export default function LoginForm() {
 
         {/* Password Field */}
         <div className="space-y-2">
-          <Label htmlFor="password" className="text-sm text-foreground">
+          <Label
+            htmlFor="password"
+            className="text-sm font-medium text-slate-200"
+          >
             Password
           </Label>
           <Input
             id="password"
             type="password"
             placeholder="Enter your password"
-            className="h-9"
+            className="h-10 border-white/10 bg-white/5 text-slate-100 placeholder-slate-500 focus:border-emerald-400 focus:ring-emerald-400"
             {...form.register("password")}
           />
           {form.formState.errors.password && (
-            <p className="text-xs text-red-500">
+            <p className="text-xs text-red-400">
               {form.formState.errors.password.message}
             </p>
           )}
@@ -111,20 +102,20 @@ export default function LoginForm() {
         <Button
           type="submit"
           disabled={form.formState.isSubmitting}
-          className="w-full"
+          className="w-full h-10 bg-emerald-400 text-emerald-950 font-medium hover:bg-emerald-300"
         >
-          {form.formState.isSubmitting ? "Logging in..." : "Login"}
+          {form.formState.isSubmitting ? "Signing in..." : "Sign In"}
         </Button>
       </form>
 
       {/* Divider */}
       <div className="relative my-6">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border" />
+          <div className="w-full border-t border-white/10" />
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="bg-card px-2 text-xs font-medium text-muted-foreground">
-            Or
+          <span className="bg-white/5 px-2 text-xs font-medium text-slate-400">
+            Or continue with
           </span>
         </div>
       </div>
@@ -133,20 +124,20 @@ export default function LoginForm() {
       <Button
         type="button"
         variant="outline"
-        className="w-full"
+        className="w-full h-10 border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
         onClick={handleGoogleLogin}
         disabled={isGoogleLoading}
       >
-        {isGoogleLoading ? "Continuing..." : "Continue with Google"}
+        {isGoogleLoading ? "Continuing..." : "Google"}
       </Button>
 
-      <p className="mt-6 text-center text-sm text-muted-foreground">
+      <p className="mt-6 text-center text-sm text-slate-400">
         New to OpScale?{" "}
         <Link
           href="/auth/signup"
-          className="font-medium text-foreground underline underline-offset-4"
+          className="font-medium text-emerald-400 hover:text-emerald-300"
         >
-          Create an account
+          Create account
         </Link>
       </p>
     </div>

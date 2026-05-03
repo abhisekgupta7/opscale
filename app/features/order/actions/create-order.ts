@@ -2,7 +2,7 @@
 
 import { createOrderSchema, type CreateOrderInput } from "../types/order.types";
 import { createOrderWithItems } from "../services/order.service";
-import { auth } from "@/auth";
+import { requireActiveOrgContext } from "@/app/features/auth/services/org-context.service";
 
 /**
  * Server action to create an order
@@ -24,16 +24,8 @@ export async function createOrder(input: CreateOrderInput) {
       };
     }
 
-    // 2️⃣ GET: Organization from session
-    const session = await auth();
-    const organizationId = (session?.user as any)?.activeOrgId;
-
-    if (!organizationId) {
-      return {
-        success: false,
-        message: "Unauthorized: Organization not found",
-      };
-    }
+    // 2️⃣ GET: Organization from shared helper
+    const { orgId: organizationId } = await requireActiveOrgContext();
 
     const { customerId, items } = validationResult.data;
 

@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { categoriesTable } from "@/lib/db/schema";
+import { type CategorySchema } from "../types/category.types";
 
 /**
  * Check if a category with the given name exists in the organization
@@ -81,7 +82,7 @@ export async function createCategoryInDb(data: Record<string, any>) {
 export async function updateCategoryInDb(
   categoryId: string,
   updateData: Record<string, any>,
-) {
+): Promise<CategorySchema[]> {
   const result = await db
     .update(categoriesTable)
     .set(updateData)
@@ -94,7 +95,9 @@ export async function updateCategoryInDb(
 /**
  * Get all categories for an organization
  */
-export async function getCategoriesByOrg(organizationId: string) {
+export async function getCategoriesByOrg(
+  organizationId: string,
+): Promise<(typeof categoriesTable.$inferSelect)[]> {
   const categories = await db
     .select()
     .from(categoriesTable)

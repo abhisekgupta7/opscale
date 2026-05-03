@@ -8,6 +8,13 @@
       "when": 1776613250513,
       "tag": "0000_ancient_captain_america",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1777808662910,
+      "tag": "0001_open_mister_sinister",
+      "breakpoints": true
     }
   ]
 }

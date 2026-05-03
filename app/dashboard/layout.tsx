@@ -12,6 +12,14 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { redirect } from "next/navigation";
+import {
+  getOrganizationById,
+  verifyMembership,
+} from "@/app/features/auth/services/membership.service";
+import { isSubscriptionActive } from "@/app/features/billing/services/payment.services";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutGrid },
@@ -23,11 +31,36 @@ const navItems = [
   { label: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id || !session.user.activeOrgId) {
+    redirect("/auth/login");
+  }
+
+  const membership = await verifyMembership(
+    session.user.id,
+    session.user.activeOrgId,
+  );
+
+  if (!membership) {
+    redirect("/auth/login");
+  }
+
+  const organization = await getOrganizationById(session.user.activeOrgId);
+
+  const hasActiveSubscription = await isSubscriptionActive(
+    session.user.activeOrgId,
+  );
+
+  if (!hasActiveSubscription) {
+    redirect("/billingManual");
+  }
+
   return (
     <div className="dark min-h-screen bg-[#0b0f14] text-foreground">
       <div className="grid min-h-screen grid-cols-[240px_1fr]">
@@ -67,10 +100,10 @@ export default function DashboardLayout({
               Active Org
             </p>
             <p className="mt-2 text-sm font-semibold text-foreground">
-              Sapphire Foods Pvt Ltd
+              {organization?.name || "Organization"}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              12 team members
+              Role: {membership.role}
             </p>
           </div>
         </aside>
@@ -85,22 +118,15 @@ export default function DashboardLayout({
                 />
               </div>
               <div className="flex items-center gap-2">
-                <Button
-                  asChild
-                  className="h-9 bg-emerald-400 text-emerald-950 hover:bg-emerald-300"
-                >
-                  <Link href="/dashboard/orders/create">Create order</Link>
-                </Button>
-                <button className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-muted-foreground transition-colors hover:bg-white/10">
+               
+                <Button className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-muted-foreground transition-colors hover:bg-white/10">
                   <Bell className="h-4 w-4" />
-                </button>
-                <button className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-white/10">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-foreground">
-                    AG
-                  </span>
-                  Admin Gupta
+                </Button>
+                <Button className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-white/10">
+                 
+                 {organization?.name || "Organization"}
                   <ChevronDown className="h-3.5 w-3.5" />
-                </button>
+                </Button>
               </div>
             </div>
           </header>

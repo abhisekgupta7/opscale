@@ -2,15 +2,14 @@
 
 "use server";
 
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getActiveOrgContext } from "@/app/features/auth/services/org-context.service";
 import { submitManualPayment } from "../services/payment.services";
 
 export async function submitManualPaymentAction(proofUrl: string) {
   try {
     // ✅ Auth
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.activeOrgId || !session?.user?.id) {
+    const context = await getActiveOrgContext();
+    if (!context) {
       return {
         success: false,
         message: "No active organization found. Please log in first.",
@@ -29,8 +28,8 @@ export async function submitManualPaymentAction(proofUrl: string) {
 
     // ✅ Submit payment through service
     await submitManualPayment(
-      session.user.activeOrgId,
-      session.user.id,
+      context.orgId,
+      context.userId,
       proofUrl,
       amount,
       "NPR",

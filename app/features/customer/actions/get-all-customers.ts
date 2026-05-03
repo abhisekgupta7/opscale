@@ -1,12 +1,11 @@
 "use server";
 
-import { auth } from "@/auth";
+import { getActiveOrgId } from "@/app/features/auth/services/org-context.service";
 import { getCustomersByOrg } from "../services/customer.service";
 
-export async function getAllCustomersForOrg() {
+export async function getAllCustomersForOrg(searchTerm?: string) {
   try {
-    const session = await auth();
-    const organizationId = (session?.user as any)?.activeOrgId;
+    const organizationId = await getActiveOrgId();
 
     if (!organizationId) {
       return {
@@ -17,10 +16,18 @@ export async function getAllCustomersForOrg() {
     }
 
     const customers = await getCustomersByOrg(organizationId);
+    const normalizedSearch = searchTerm?.trim().toLowerCase();
+    const filteredCustomers = normalizedSearch
+      ? customers.filter((customer) =>
+          [customer.name, customer.email]
+            .filter(Boolean)
+            .some((value) => value.toLowerCase().includes(normalizedSearch)),
+        )
+      : customers;
 
     return {
       success: true,
-      customers: customers.map((c) => ({
+      customers: filteredCustomers.map((c) => ({
         id: c.id,
         name: c.name,
         email: c.email,

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Utility/Navbar";
-import Footer from "@/components/Utility/Footer";
 import { Toaster } from "@/components/ui/sonner";
+import Providers from "./providers";
+import AppChrome from "@/components/Utility/AppChrome";
 
 const manrope = Manrope({
   variable: "--font-sans",
@@ -25,13 +25,14 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      data-scroll-behavior="smooth"
       className={`${manrope.variable} h-full antialiased scroll-smooth`}
     >
       <body className="min-h-full flex flex-col bg-linear-to-b from-background via-background to-muted/30">
-        <Navbar />
-        <main className="grow">{children}</main>
-        <Footer />
-        <Toaster />
+        <Providers>
+          <AppChrome>{children}</AppChrome>
+          <Toaster />
+        </Providers>
       </body>
     </html>
   );

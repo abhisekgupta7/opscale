@@ -32,58 +32,57 @@ export function PricingSection() {
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
       {/* LEFT: FREE TRIAL */}
-      <div className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-sm">
         <div className="space-y-2">
-          <p className="text-xs font-semibold text-blue-700">PRO TRIAL</p>
-          <h2 className="text-xl font-semibold text-slate-900">
+          <p className="text-xs font-semibold text-emerald-300">PRO TRIAL</p>
+          <h2 className="text-xl font-semibold text-slate-100">
             Start Free Trial
           </h2>
         </div>
 
-        <p className="mt-2 text-sm text-slate-600">
+        <p className="mt-2 text-sm text-slate-400">
           Try all PRO features free for 7 days.
         </p>
 
-        <ul className="mt-4 space-y-2 text-sm text-slate-700">
-          <li>✔ Product management</li>
+        <ul className="mt-4 space-y-2 text-sm text-slate-300">
+          <li>✔ Inventory management</li>
           <li>✔ Order tracking</li>
-          <li>✔ Reports & analytics</li>
+          <li>✔ Khata system (payment recovery automation)</li>
+          <li>✔ Digital ledger</li>
         </ul>
 
         <Button
           onClick={handleStartTrial}
           disabled={isLoading}
-          className="mt-6 w-full bg-blue-600 text-white hover:bg-blue-700"
+          className="mt-6 w-full bg-emerald-400 text-emerald-950 hover:bg-emerald-300"
         >
           {isLoading ? "Starting Trial..." : "Start Free Trial"}
         </Button>
       </div>
 
-      {/* RIGHT: CONTACT SALES */}
-      <div className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
+      {/* RIGHT: ENTERPRISE PLAN */}
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-sm">
         <div className="space-y-2">
-          <p className="text-xs font-semibold text-blue-700">CUSTOM PLAN</p>
-          <h2 className="text-xl font-semibold text-slate-900">
-            Contact Sales
+          <p className="text-xs font-semibold text-emerald-300">ENTERPRISE</p>
+          <h2 className="text-xl font-semibold text-slate-100">
+            Wholesale Scale Plan
           </h2>
         </div>
 
-        <p className="mt-2 text-sm text-slate-600">
-          Get custom pricing and pay manually via QR.
+        <p className="mt-2 text-sm text-slate-400">
+          For large teams with advanced automation needs.
         </p>
 
-        <ul className="mt-4 space-y-2 text-sm text-slate-700">
-          <li>✔ Dedicated support</li>
-          <li>✔ Flexible pricing</li>
-          <li>✔ Bulk business onboarding</li>
+        <ul className="mt-4 space-y-2 text-sm text-slate-300">
+          <li>✔ Multi-branch management</li>
+          <li>✔ Advanced payment recovery automation</li>
+          <li>✔ Custom khata workflows</li>
+          <li>✔ API integrations & webhooks</li>
         </ul>
 
-        <Link href="/billingManual" className="w-full">
-          <Button
-            variant="outline"
-            className="mt-6 w-full border-blue-200 text-blue-700 hover:bg-blue-50"
-          >
-            Contact Sales
+        <Link href="/billing/manual" className="w-full">
+          <Button className="mt-6 w-full border-emerald-400 bg-emerald-400/10 text-emerald-300 hover:bg-emerald-400/20 border">
+            Request Demo
           </Button>
         </Link>
       </div>
