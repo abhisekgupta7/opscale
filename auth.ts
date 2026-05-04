@@ -1,4 +1,6 @@
-import NextAuth from "next-auth";
+import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-export const { auth, handlers, signIn, signOut } = NextAuth(authOptions);
+export async function auth() {
+  return await getServerSession(authOptions);
+}

@@ -38,7 +38,8 @@ export const organizationConfigTable = pgTable("organization_config", {
     .primaryKey()
     .default(sql`gen_random_uuid()`),
   organizationId: uuid()
-    .notNull().unique()
+    .notNull()
+    .unique()
     .references(() => organizationsTable.id, { onDelete: "cascade" }),
   paymentMethod: varchar({ length: 50 }).notNull().default("MANUAL"), // MANUAL | ESEWA
   qrCodeUrl: varchar({ length: 255 }), // ImageKit URL for QR code (if using ESEWA)
@@ -60,6 +61,20 @@ export const membershipsTable = pgTable("memberships", {
     .notNull()
     .references(() => organizationsTable.id, { onDelete: "cascade" }),
   role: varchar({ length: 50 }).notNull(),
+  createdAt: timestamp().defaultNow().notNull(),
+  updatedAt: timestamp().defaultNow().notNull(),
+});
+
+export const notificationTable = pgTable("notifications", {
+  id: uuid()
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  orgId: uuid()
+    .notNull()
+    .references(() => organizationsTable.id, { onDelete: "cascade" }),
+  type: varchar({ length: 50 }).notNull(),
+  message: varchar({ length: 500 }).notNull(),
+  isRead: boolean().notNull().default(false),
   createdAt: timestamp().defaultNow().notNull(),
   updatedAt: timestamp().defaultNow().notNull(),
 });
@@ -87,32 +102,35 @@ export const subscriptionsTable = pgTable("subscriptions", {
 export const referenceTypeEnum = pgEnum("payment_reference_type", [
   "ORDER",
   "SUBSCRIPTION",
-])
+]);
 export const paymentProviderEnum = pgEnum("payment_provider", [
   "MANUAL",
   "ESEWA",
-])
+]);
 
 export const paymentStatusEnum = pgEnum("payment_status", [
   "PENDING",
   "VERIFIED",
   "REJECTED",
-
-])
+]);
 
 export const paymentContextEnum = pgEnum("payment_context", [
   "PLATFORM",
   "ORG",
-])
+]);
 
 export const paymentsTable = pgTable(
   "payments",
   {
-    id: uuid().primaryKey().default(sql`gen_random_uuid()`),
+    id: uuid()
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
 
     organizationId: uuid().references(() => organizationsTable.id),
 
-    userId: uuid().notNull().references(() => usersTable.id),
+    userId: uuid()
+      .notNull()
+      .references(() => usersTable.id),
 
     customerId: uuid().references(() => customerTable.id, {
       onDelete: "set null",
@@ -148,10 +166,10 @@ export const paymentsTable = pgTable(
 
     uniqueProviderPidx: unique("unique_provider_pidx").on(
       table.provider,
-      table.pidx
+      table.pidx,
     ),
-  })
-)
+  }),
+);
 
 export const categoriesTable = pgTable("categories", {
   id: uuid()

@@ -163,6 +163,7 @@ export async function submitManualPayment(
       .values({
         organizationId,
         userId,
+        context: "ORG",
         provider: "MANUAL",
         amount,
         currency,

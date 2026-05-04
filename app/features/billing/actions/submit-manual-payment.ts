@@ -4,6 +4,7 @@
 
 import { getActiveOrgContext } from "@/app/features/auth/services/org-context.service";
 import { submitManualPayment } from "../services/payment.services";
+import { createNotification } from "@/app/features/notification/services/notification.service";
 
 export async function submitManualPaymentAction(proofUrl: string) {
   try {
@@ -27,12 +28,18 @@ export async function submitManualPaymentAction(proofUrl: string) {
     const amount = 15 * 100 * 1000;
 
     // ✅ Submit payment through service
-    await submitManualPayment(
+    const payment = await submitManualPayment(
       context.orgId,
       context.userId,
       proofUrl,
       amount,
       "NPR",
+    );
+
+    await createNotification(
+      context.orgId,
+      "PAYMENT_SUBMITTED",
+      `New manual payment proof submitted and waiting for approval. PAYMENT_ID:${payment.id}`,
     );
 
     return {

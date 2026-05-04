@@ -1,6 +1,5 @@
 import Link from "next/link";
 import {
-  Bell,
   ChevronDown,
   LayoutGrid,
   Package,
@@ -20,6 +19,8 @@ import {
 import { isSubscriptionActive } from "@/app/features/billing/services/payment.services";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getDashboardNotifications } from "@/app/features/notification/actions/get-dashboard-notifications";
+import NotificationBell from "@/app/features/notification/components/notification-bell";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutGrid },
@@ -56,6 +57,8 @@ export default async function DashboardLayout({
   const hasActiveSubscription = await isSubscriptionActive(
     session.user.activeOrgId,
   );
+
+  const notificationsResult = await getDashboardNotifications();
 
   if (!hasActiveSubscription) {
     redirect("/billingManual");
@@ -110,21 +113,20 @@ export default async function DashboardLayout({
 
         <div className="flex min-h-screen flex-col">
           <header className="sticky top-0 z-20 border-b border-white/10 bg-[#0b0f14]/85 backdrop-blur">
-            <div className="flex h-14 items-center gap-4 px-6">
-              <div className="relative w-full max-w-md">
+            <div className="flex h-14 items-center justify-between gap-4 px-6">
+              <div className="relative w-full max-w-md flex-1">
                 <Input
                   placeholder="Search orders, customers, invoices"
                   className="h-9 border-white/10 bg-white/5 text-sm text-foreground placeholder:text-muted-foreground"
                 />
               </div>
-              <div className="flex items-center gap-2">
-               
-                <Button className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-muted-foreground transition-colors hover:bg-white/10">
-                  <Bell className="h-4 w-4" />
-                </Button>
-                <Button className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-white/10">
-                 
-                 {organization?.name || "Organization"}
+              <div className="flex shrink-0 items-center gap-3">
+                <NotificationBell
+                  unreadCount={notificationsResult.unreadCount}
+                  notifications={notificationsResult.notifications}
+                />
+                <Button className="h-9 rounded-full border border-white/10 bg-white/5 px-3 text-xs text-muted-foreground transition-colors hover:bg-white/10">
+                  {organization?.name || "Organization"}
                   <ChevronDown className="h-3.5 w-3.5" />
                 </Button>
               </div>

@@ -13,9 +13,6 @@ const optionalText = z.union([
 export const organizationConfigSchema = z.object({
   paymentMethod: z.enum(["MANUAL", "ESEWA"]),
   qrCodeUrl: optionalUrl.optional(),
-  isActive: z.boolean(),
-  key: z.string().min(2, "Key must be at least 2 characters"),
-  value: optionalText.optional(),
 });
 
 export const createOrganizationConfigSchema = organizationConfigSchema;

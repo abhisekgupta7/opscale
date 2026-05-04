@@ -25,9 +25,6 @@ export default function OrgConfigForm() {
     defaultValues: {
       paymentMethod: "MANUAL",
       qrCodeUrl: "",
-      isActive: true,
-      key: "PAYMENT_CONFIG",
-      value: "",
     },
   });
 
