@@ -26,6 +26,7 @@ import DashboardSignOutButton from "@/components/Utility/DashboardSignOutButton"
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutGrid },
   { label: "Orders", href: "/dashboard/orders", icon: ShoppingCart },
+  { label:"Category", href: "/dashboard/category", icon: Package },
   { label: "Products", href: "/dashboard/products", icon: Package },
   { label: "Customers", href: "/dashboard/customers", icon: Users },
   { label: "Ledger", href: "/dashboard/ledger", icon: Receipt },

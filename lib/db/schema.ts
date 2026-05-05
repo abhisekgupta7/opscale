@@ -23,6 +23,18 @@ export const usersTable = pgTable("users", {
   updatedAt: timestamp().defaultNow().notNull(),
 });
 
+export const adminUsersTable = pgTable("admin_users", {
+  id: uuid()
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  email: varchar({ length: 255 }).notNull().unique(),
+  passwordHash: varchar({ length: 255 }).notNull(),
+  name: varchar({ length: 255 }).notNull(),
+  isActive: boolean().notNull().default(true),
+  createdAt: timestamp().defaultNow().notNull(),
+  updatedAt: timestamp().defaultNow().notNull(),
+});
+
 export const organizationsTable = pgTable("organizations", {
   id: uuid()
     .primaryKey()

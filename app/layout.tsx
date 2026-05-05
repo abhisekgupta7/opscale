@@ -3,7 +3,7 @@ import { Manrope } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import Providers from "./providers";
-import AppChrome from "@/components/Utility/AppChrome";
+import LayoutWrapper from "@/components/Utility/LayoutWrapper";
 
 const manrope = Manrope({
   variable: "--font-sans",
@@ -30,7 +30,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-linear-to-b from-background via-background to-muted/30">
         <Providers>
-          <AppChrome>{children}</AppChrome>
+          <LayoutWrapper>{children}</LayoutWrapper>
           <Toaster />
         </Providers>
       </body>

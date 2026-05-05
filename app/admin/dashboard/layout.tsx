@@ -3,11 +3,12 @@ import { ChevronDown, LayoutGrid, Settings, Wallet } from "lucide-react";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { auth } from "@/auth";
-import { verifyMembership } from "@/app/features/auth/services/membership.service";
-import { getOrganizationById } from "@/app/features/auth/services/membership.service";
+import { cookies } from "next/headers";
+import { findAdminById } from "@/app/features/admin/services/admin-auth.service";
+import { verifyAdminToken } from "@/app/features/admin/utils/jwt";
 import { getAdminNotifications } from "@/app/features/notification/actions/get-admin-notifications";
 import NotificationBell from "@/app/features/notification/components/notification-bell";
+import AdminSignOutButton from "@/components/Utility/AdminSignOutButton";
 
 const navItems = [
   { label: "Dashboard", href: "/admin/dashboard", icon: LayoutGrid },
@@ -20,19 +21,24 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
+  const cookieStore = await cookies();
+  const token = cookieStore.get("admin_token")?.value;
 
-  if (!session?.user?.id) {
-    redirect("/auth/login");
+  if (!token) {
+    redirect("/admin/auth/login");
   }
 
-  const membership = session.user.activeOrgId
-    ? await verifyMembership(session.user.id, session.user.activeOrgId)
-    : null;
+  const tokenVerification = verifyAdminToken(token);
+  if (!tokenVerification.valid) {
+    redirect("/admin/auth/login");
+  }
 
-  const organization = session.user.activeOrgId
-    ? await getOrganizationById(session.user.activeOrgId)
-    : null;
+  const adminPayload = tokenVerification.payload;
+  const admin = await findAdminById(adminPayload.id);
+
+  if (!admin || !admin.isActive) {
+    redirect("/admin/auth/login");
+  }
 
   const notificationsResult = await getAdminNotifications();
 
@@ -70,16 +76,16 @@ export default async function DashboardLayout({
             })}
           </nav>
 
+          <AdminSignOutButton />
+
           <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4">
             <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-              Admin Scope
+              Admin Account
             </p>
             <p className="mt-2 text-sm font-semibold text-foreground">
-              {organization?.name || "Platform"}
+              {admin.name}
             </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Role: {membership?.role || session.user.role || "ADMIN"}
-            </p>
+            <p className="mt-1 text-xs text-muted-foreground">{admin.email}</p>
           </div>
         </aside>
 
@@ -98,7 +104,7 @@ export default async function DashboardLayout({
                   notifications={notificationsResult.notifications}
                 />
                 <Button className="h-9 rounded-full border border-white/10 bg-white/5 px-3 text-xs text-muted-foreground transition-colors hover:bg-white/10">
-                  {organization?.name || "Admin"}
+                  {admin.name}
                   <ChevronDown className="h-3.5 w-3.5" />
                 </Button>
               </div>
