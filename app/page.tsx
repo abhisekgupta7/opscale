@@ -36,7 +36,7 @@ const platformHighlights = [
   },
   {
     title: "Khata system",
-    description: "Customer ledgers, automated payment recovery and reminders.",
+    description: "Customer ledgers and automated payment recovery.",
     icon: Wallet,
   },
   {
@@ -58,8 +58,7 @@ const workflowSteps = [
   },
   {
     title: "Reconcile & recover",
-    description:
-      "Post payments to khata, automate reminders and recovery flows.",
+    description: "Post payments to khata and streamline recovery flows.",
   },
 ];
 
@@ -67,22 +66,22 @@ const faqs = [
   {
     question: "How does OpScale replace spreadsheets?",
     answer:
-      "Every order, payment, and ledger entry lives in one workspace. The system updates balances and inventory in real time, so your team never reconciles manually.",
+      "OpScale centralizes orders, payments, customers, and ledger entries in one workspace. That gives your team a single source of truth with less manual reconciliation and fewer data mistakes.",
   },
   {
-    question: "Can I manage multiple branches or orgs?",
+    question: "Can I manage multiple branches or organizations?",
     answer:
-      "Yes. Each tenant has isolated data, roles, and reporting. You can switch orgs instantly without mixing inventory or receivables.",
+      "Yes. Each organization keeps its own users, inventory, customers, and payments separated, so reporting stays clean and branch data never mixes.",
   },
   {
-    question: "What about manual payment proofs?",
+    question: "How are manual payment proofs handled?",
     answer:
-      "Upload QR proofs and mark them verified in a single review queue. Approvals sync to ledger entries immediately.",
+      "Users upload a screenshot or QR proof, then an owner reviews it in a dedicated queue. Once approved, the payment updates the ledger and subscription status automatically.",
   },
   {
-    question: "How fast is onboarding?",
+    question: "How quickly can a team get started?",
     answer:
-      "Most teams onboard within one week with catalog imports, customer mapping, and custom payment terms setup.",
+      "Most teams can go live quickly with product setup, customer import, and payment configuration. The platform is designed to be usable without a long implementation cycle.",
   },
 ];
 
@@ -273,7 +272,7 @@ function WorkflowSection() {
               {[
                 "Create wholesale order with customer invoice",
                 "Verify QR payment proof and reconcile",
-                "Send automated payment reminders",
+                "Update ledger entries after payment approval",
                 "Auto-update ledger with payment entry",
               ].map((task) => (
                 <div
@@ -388,7 +387,7 @@ function CtaSection() {
                 size="lg"
                 className="h-10 bg-emerald-400 px-5 text-emerald-950 hover:bg-emerald-300"
               >
-                <Link href="/billing/manual">Book a strategy call</Link>
+                <Link href="/contact">Book a strategy call</Link>
               </Button>
               <Button
                 asChild

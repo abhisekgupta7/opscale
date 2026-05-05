@@ -11,6 +11,22 @@ import {
 
 const PAYMENT_ID_PATTERN = /PAYMENT_ID:([0-9a-fA-F-]{36})/;
 
+type DashboardNotificationRow = {
+  id: string;
+  orgId: string;
+  type: string;
+  message: string;
+  isRead: boolean;
+  createdAt: Date;
+};
+
+type PaymentMetaRow = {
+  id: string;
+  status: string;
+  amount: number;
+  proofUrl: string | null;
+};
+
 export async function getDashboardNotifications() {
   try {
     const orgId = await getActiveOrgId();
@@ -29,11 +45,12 @@ export async function getDashboardNotifications() {
 
     const paymentIds = notifications
       .map(
-        (notification) => notification.message.match(PAYMENT_ID_PATTERN)?.[1],
+        (notification: DashboardNotificationRow) =>
+          notification.message.match(PAYMENT_ID_PATTERN)?.[1],
       )
-      .filter((id): id is string => Boolean(id));
+      .filter((id: string | undefined): id is string => Boolean(id));
 
-    const paymentMeta = paymentIds.length
+    const paymentMeta: PaymentMetaRow[] = paymentIds.length
       ? await db
           .select({
             id: paymentsTable.id,
@@ -52,23 +69,28 @@ export async function getDashboardNotifications() {
     return {
       success: true,
       unreadCount,
-      notifications: notifications.map((notification) => {
-        const paymentId =
-          notification.message.match(PAYMENT_ID_PATTERN)?.[1] || null;
-        const payment = paymentId ? paymentMetaMap.get(paymentId) : null;
+      notifications: notifications.map(
+        (notification: DashboardNotificationRow) => {
+          const paymentId =
+            notification.message.match(PAYMENT_ID_PATTERN)?.[1] || null;
+          const payment = paymentId ? paymentMetaMap.get(paymentId) : null;
 
-        return {
-          id: notification.id,
-          type: notification.type,
-          message: notification.message.replace(PAYMENT_ID_PATTERN, "").trim(),
-          isRead: notification.isRead,
-          createdAt: notification.createdAt,
-          paymentId,
-          paymentStatus: payment?.status || null,
-          proofUrl: payment?.proofUrl || null,
-          amount: payment?.amount || null,
-        };
-      }),
+          return {
+            id: notification.id,
+            orgId: notification.orgId,
+            type: notification.type,
+            message: notification.message
+              .replace(PAYMENT_ID_PATTERN, "")
+              .trim(),
+            isRead: notification.isRead,
+            createdAt: notification.createdAt,
+            paymentId,
+            paymentStatus: payment?.status || null,
+            proofUrl: payment?.proofUrl || null,
+            amount: payment?.amount || null,
+          };
+        },
+      ),
     };
   } catch {
     return {

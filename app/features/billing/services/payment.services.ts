@@ -143,6 +143,7 @@ export async function submitManualPayment(
   proofUrl: string,
   amount: number = 100 * 1000 * 15, // Rs. 15,000 in paisa (default)
   currency: string = "NPR",
+  customerId?: string,
 ) {
   try {
     if (!proofUrl) {
@@ -163,6 +164,7 @@ export async function submitManualPayment(
       .values({
         organizationId,
         userId,
+        customerId: customerId ?? null,
         context: "ORG",
         provider: "MANUAL",
         amount,

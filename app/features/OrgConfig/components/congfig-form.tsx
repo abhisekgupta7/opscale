@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { BadgeCheck, CloudUpload, Globe2 } from "lucide-react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import ImageUploader from "@/components/Utility/ImageUploader";
 import {
   organizationConfigSchema,
@@ -14,17 +16,18 @@ import {
 } from "../types/config.types";
 import { getOrganizationConfigAction } from "../actions/get-config";
 import { createOrganizationConfigAction } from "../actions/create-config";
-import { updateOrganizationConfigAction } from "../actions/update-config";
 
 export default function OrgConfigForm() {
   const [isLoading, setIsLoading] = useState(true);
-  const [hasConfig, setHasConfig] = useState(false);
+  const [existingConfig, setExistingConfig] =
+    useState<OrganizationConfigInput | null>(null);
 
   const form = useForm<OrganizationConfigInput>({
     resolver: zodResolver(organizationConfigSchema),
     defaultValues: {
       paymentMethod: "MANUAL",
       qrCodeUrl: "",
+      phoneNumber: "",
     },
   });
 
@@ -34,16 +37,17 @@ export default function OrgConfigForm() {
         setIsLoading(true);
         const result = await getOrganizationConfigAction();
         if (result.success && result.data) {
-          setHasConfig(true);
-          form.reset({
-            paymentMethod: result.data.paymentMethod || "MANUAL",
+          const loadedConfig: OrganizationConfigInput = {
+            paymentMethod:
+              result.data.paymentMethod === "ESEWA" ? "ESEWA" : "MANUAL",
             qrCodeUrl: result.data.qrCodeUrl || "",
-            isActive: result.data.isActive ?? true,
-            key: result.data.key || "PAYMENT_CONFIG",
-            value: result.data.value || "",
-          });
+            phoneNumber: result.data.phoneNumber || "",
+          };
+
+          setExistingConfig(loadedConfig);
+          form.reset(loadedConfig);
         }
-      } catch (error) {
+      } catch {
         toast.error("Failed to load organization config");
       } finally {
         setIsLoading(false);
@@ -54,18 +58,18 @@ export default function OrgConfigForm() {
   }, [form]);
 
   const onSubmit = async (data: OrganizationConfigInput) => {
-    const action = hasConfig
-      ? updateOrganizationConfigAction
-      : createOrganizationConfigAction;
-
-    const result = await action(data);
+    const result = await createOrganizationConfigAction(data);
     if (!result.success) {
       toast.error(result.message || "Failed to save config");
       return;
     }
 
     toast.success(result.message || "Config saved successfully");
-    setHasConfig(true);
+    setExistingConfig({
+      paymentMethod: data.paymentMethod,
+      qrCodeUrl: data.qrCodeUrl || "",
+      phoneNumber: data.phoneNumber || "",
+    });
   };
 
   const handleUploadComplete = (url: string) => {
@@ -78,96 +82,151 @@ export default function OrgConfigForm() {
   };
 
   if (isLoading) {
-    return <div className="text-sm text-muted-foreground">Loading...</div>;
+    return (
+      <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-6 text-sm text-muted-foreground">
+        Loading organization config...
+      </div>
+    );
+  }
+
+  if (existingConfig) {
+    return (
+      <div className="mx-auto w-full max-w-2xl rounded-3xl border border-white/10 bg-[#0f141b] p-6 shadow-sm">
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+              Organization config
+            </p>
+            <h2 className="text-2xl font-semibold text-foreground">
+              Payment setup
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              This organization already has a saved payment config.
+            </p>
+          </div>
+          <Badge className="border-emerald-400/40 bg-emerald-400/10 text-emerald-300">
+            <BadgeCheck className="h-3.5 w-3.5" />
+            Configured
+          </Badge>
+        </div>
+
+        <div className="mt-6 space-y-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-muted-foreground">
+          <div className="flex items-center justify-between gap-4">
+            <span>Payment method</span>
+            <span className="font-medium text-foreground">
+              {existingConfig.paymentMethod}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <span>QR code URL</span>
+            <span className="max-w-56 truncate font-medium text-foreground">
+              {existingConfig.qrCodeUrl || "Not set"}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <span>Phone number</span>
+            <span className="font-medium text-foreground">
+              {existingConfig.phoneNumber || "Not set"}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="w-full max-w-2xl space-y-6">
-      <div className="space-y-1">
-        <h2 className="text-2xl font-semibold">Organization Config</h2>
+    <div className="mx-auto w-full max-w-2xl rounded-3xl border border-white/10 bg-[#0f141b] p-6 shadow-sm">
+      <div className="space-y-2">
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+          Organization config
+        </p>
+        <h2 className="text-2xl font-semibold text-foreground">
+          Payment setup
+        </h2>
         <p className="text-sm text-muted-foreground">
-          Configure payment settings and organization-level flags.
+          Keep only the payment method, QR code URL, and phone number in this
+          configuration.
         </p>
       </div>
 
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="paymentMethod">Payment Method</Label>
+          <Label htmlFor="paymentMethod">Payment method</Label>
           <select
             id="paymentMethod"
-            className="w-full rounded border border-input px-3 py-2 text-sm"
+            className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-foreground outline-none transition focus:border-emerald-400/50"
             {...form.register("paymentMethod")}
           >
             <option value="MANUAL">MANUAL</option>
             <option value="ESEWA">ESEWA</option>
           </select>
+          <p className="text-xs text-muted-foreground">
+            Choose how customers will pay for this organization.
+          </p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="key">Config Key</Label>
-          <Input
-            id="key"
-            placeholder="PAYMENT_CONFIG"
-            {...form.register("key")}
-          />
-          {form.formState.errors.key && (
-            <p className="text-xs text-destructive">
-              {form.formState.errors.key.message}
-            </p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="value">Config Value (optional)</Label>
-          <Input
-            id="value"
-            placeholder="Optional value"
-            {...form.register("value")}
-          />
-          {form.formState.errors.value && (
-            <p className="text-xs text-destructive">
-              {form.formState.errors.value.message}
-            </p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="qrCodeUrl">QR Code URL (optional)</Label>
+          <Label htmlFor="qrCodeUrl">QR code URL</Label>
           <Input
             id="qrCodeUrl"
             placeholder="https://..."
+            className="border-white/10 bg-white/5 text-foreground placeholder:text-muted-foreground"
             {...form.register("qrCodeUrl")}
           />
           {form.formState.errors.qrCodeUrl && (
-            <p className="text-xs text-destructive">
+            <p className="text-xs text-red-400">
               {form.formState.errors.qrCodeUrl.message}
             </p>
           )}
         </div>
 
-        <ImageUploader
-          onUploadComplete={handleUploadComplete}
-          onError={handleUploadError}
-          folder="/org-config"
-          label="Upload QR Code"
-        />
-
-        <div className="space-y-2">
-          <Label htmlFor="isActive">Config Status</Label>
-          <select
-            id="isActive"
-            className="w-full rounded border border-input px-3 py-2 text-sm"
-            {...form.register("isActive", {
-              setValueAs: (value) => value === "true",
-            })}
-          >
-            <option value="true">Active</option>
-            <option value="false">Inactive</option>
-          </select>
+        <div className="space-y-2 rounded-2xl border border-dashed border-white/10 bg-white/5 p-4">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            <CloudUpload className="h-4 w-4" />
+            QR upload helper
+          </div>
+          <ImageUploader
+            onUploadComplete={handleUploadComplete}
+            onError={handleUploadError}
+            folder="/org-config"
+            label="Upload or paste QR code"
+            allowPaste
+          />
         </div>
 
-        <Button type="submit" disabled={form.formState.isSubmitting}>
-          {form.formState.isSubmitting ? "Saving..." : "Save Config"}
+        <div className="space-y-2">
+          <Label htmlFor="phoneNumber">Phone number</Label>
+          <Input
+            id="phoneNumber"
+            placeholder="Enter support or payment phone number"
+            className="border-white/10 bg-white/5 text-foreground placeholder:text-muted-foreground"
+            inputMode="tel"
+            {...form.register("phoneNumber")}
+          />
+          <p className="text-xs text-muted-foreground">
+            This is the phone number shown with the organization payment
+            details.
+          </p>
+          {form.formState.errors.phoneNumber && (
+            <p className="text-xs text-red-400">
+              {form.formState.errors.phoneNumber.message}
+            </p>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <Globe2 className="h-4 w-4" />
+            Saved fields only: payment method, QR code URL, phone number.
+          </div>
+        </div>
+
+        <Button
+          type="submit"
+          disabled={form.formState.isSubmitting}
+          className="h-11 w-full bg-emerald-400 text-emerald-950 hover:bg-emerald-300"
+        >
+          {form.formState.isSubmitting ? "Saving..." : "Save config"}
         </Button>
       </form>
     </div>

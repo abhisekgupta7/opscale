@@ -9,6 +9,7 @@ import { approvePaymentAction } from "@/app/features/billing/actions/approve-pay
 
 type NotificationItem = {
   id: string;
+  orgId?: string;
   type: string;
   message: string;
   isRead: boolean;
@@ -50,7 +51,10 @@ export default function NotificationBell({
 
   const handleMarkRead = (notificationId: string) => {
     startTransition(async () => {
-      await markNotificationReadAction(notificationId);
+      const notification = notifications.find(
+        (item) => item.id === notificationId,
+      );
+      await markNotificationReadAction(notificationId, notification?.orgId);
       router.refresh();
     });
   };

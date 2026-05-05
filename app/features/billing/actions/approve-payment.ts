@@ -1,6 +1,6 @@
 "use server";
 
-import { getActiveOrgContext } from "@/app/features/auth/services/org-context.service";
+import { auth } from "@/auth";
 import {
   activateSubscriptionAfterPayment,
   getPayment,
@@ -14,24 +14,31 @@ export async function approvePaymentAction(
   notificationId?: string,
 ) {
   try {
-    const context = await getActiveOrgContext();
+    const session = await auth();
+    const payment = await getPayment(paymentId);
 
-    if (!context) {
+    if (!session?.user?.id || !payment) {
       return {
         success: false,
         message: "Unauthorized",
       };
     }
 
-    if (context.role !== "OWNER" && context.role !== "ADMIN") {
+    const role = session.user.role;
+    const activeOrgId = session.user.activeOrgId;
+
+    if (role !== "OWNER" && role !== "ADMIN") {
       return {
         success: false,
         message: "Only admins can approve payments",
       };
     }
 
-    const payment = await getPayment(paymentId);
-    if (!payment || payment.organizationId !== context.orgId) {
+    if (
+      role === "OWNER" &&
+      activeOrgId &&
+      payment.organizationId !== activeOrgId
+    ) {
       return {
         success: false,
         message: "Payment not found for this organization",
@@ -46,17 +53,25 @@ export async function approvePaymentAction(
     }
 
     await updatePaymentStatus(paymentId, "VERIFIED");
-    await activateSubscriptionAfterPayment(context.orgId);
+    await activateSubscriptionAfterPayment(payment.organizationId!);
 
     if (notificationId) {
-      await markNotificationAsRead(context.orgId, notificationId);
+      try {
+        await markNotificationAsRead(payment.organizationId!, notificationId);
+      } catch (error) {
+        console.error("Failed to mark review notification as read", error);
+      }
     }
 
-    await createNotification(
-      context.orgId,
-      "PAYMENT_VERIFIED",
-      `Manual payment has been approved successfully. PAYMENT_ID:${paymentId}`,
-    );
+    try {
+      await createNotification(
+        payment.organizationId!,
+        "PAYMENT_VERIFIED",
+        `Manual payment has been approved successfully. PAYMENT_ID:${paymentId}`,
+      );
+    } catch (error) {
+      console.error("Failed to create approval notification", error);
+    }
 
     return {
       success: true,

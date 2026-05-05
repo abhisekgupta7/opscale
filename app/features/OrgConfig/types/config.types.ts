@@ -6,13 +6,14 @@ const optionalUrl = z.union([
 ]);
 
 const optionalText = z.union([
-  z.string().max(1000, "Value must be 1000 characters or less"),
+  z.string().max(25, "Phone number must be 25 characters or less"),
   z.literal(""),
 ]);
 
 export const organizationConfigSchema = z.object({
   paymentMethod: z.enum(["MANUAL", "ESEWA"]),
   qrCodeUrl: optionalUrl.optional(),
+  phoneNumber: optionalText.optional(),
 });
 
 export const createOrganizationConfigSchema = organizationConfigSchema;

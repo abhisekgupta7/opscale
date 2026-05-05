@@ -42,9 +42,7 @@ export async function createOrganizationConfigAction(
     const data = {
       paymentMethod: parsed.data.paymentMethod,
       qrCodeUrl: parsed.data.qrCodeUrl?.trim() || "",
-      isActive: parsed.data.isActive,
-      key: parsed.data.key.trim(),
-      value: parsed.data.value?.trim() || "",
+      phoneNumber: parsed.data.phoneNumber?.trim() || "",
     };
 
     const created = await createOrganizationConfig(organizationId, data);

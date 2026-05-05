@@ -1,5 +1,14 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { getAllProductsForOrg } from "@/app/features/product/actions/get-all-products";
 
 function formatCurrency(amountInPaisa: number) {
@@ -46,50 +55,45 @@ export default async function ProductsPage({
       </div>
 
       <div className="rounded-xl border border-white/10 bg-white/5">
-        <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-          <p className="text-sm font-semibold text-foreground">Products</p>
-          <div className="text-xs text-muted-foreground">
-            {products.length} records
-          </div>
-        </div>
-        <div className="overflow-hidden">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-white/5 text-xs uppercase tracking-[0.16em] text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3 font-medium">Name</th>
-                <th className="px-4 py-3 font-medium">Price</th>
-                <th className="px-4 py-3 font-medium">Stock</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/10">
-              {products.map((product) => (
-                <tr key={product.id}>
-                  <td className="px-4 py-3 font-medium text-foreground">
+        <Table>
+          <TableCaption>
+            {products.length} product{products.length === 1 ? "" : "s"} in your
+            active organization.
+          </TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Price</TableHead>
+              <TableHead className="text-right">Stock</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {products.length > 0 ? (
+              products.map((product) => (
+                <TableRow key={product.id}>
+                  <TableCell className="font-medium text-foreground">
                     {product.name}
-                  </td>
-                  <td className="px-4 py-3 text-foreground">
-                    {formatCurrency(product.price)}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
+                  </TableCell>
+                  <TableCell>{formatCurrency(product.price)}</TableCell>
+                  <TableCell className="text-right text-muted-foreground">
                     {product.stock}
-                  </td>
-                </tr>
-              ))}
-              {products.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={3}
-                    className="px-4 py-8 text-center text-sm text-muted-foreground"
-                  >
-                    {result.success
-                      ? "No products found for this organization."
-                      : result.message || "Unable to load products."}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={3}
+                  className="h-24 text-center text-muted-foreground"
+                >
+                  {result.success
+                    ? "No products found for this organization."
+                    : result.message || "Unable to load products."}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

@@ -7,7 +7,6 @@ import {
   boolean,
   index,
   unique,
-  type AnyPgColumn,
   pgEnum,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
@@ -43,9 +42,7 @@ export const organizationConfigTable = pgTable("organization_config", {
     .references(() => organizationsTable.id, { onDelete: "cascade" }),
   paymentMethod: varchar({ length: 50 }).notNull().default("MANUAL"), // MANUAL | ESEWA
   qrCodeUrl: varchar({ length: 255 }), // ImageKit URL for QR code (if using ESEWA)
-  isActive: boolean().notNull().default(true),
-  key: varchar({ length: 255 }).notNull(),
-  value: varchar({ length: 1000 }),
+
   createdAt: timestamp().defaultNow().notNull(),
   updatedAt: timestamp().defaultNow().notNull(),
 });
@@ -150,7 +147,6 @@ export const paymentsTable = pgTable(
 
     proofUrl: varchar({ length: 255 }),
 
-    referenceType: referenceTypeEnum(),
     referenceId: varchar({ length: 255 }),
 
     verifiedAt: timestamp(),
@@ -179,10 +175,6 @@ export const categoriesTable = pgTable("categories", {
     .notNull()
     .references(() => organizationsTable.id, { onDelete: "cascade" }),
   name: varchar({ length: 255 }).notNull(),
-  parentId: uuid().references((): AnyPgColumn => categoriesTable.id, {
-    onDelete: "cascade",
-  }),
-  categoryPhoto: varchar({ length: 255 }),
   createdAt: timestamp().defaultNow().notNull(),
   updatedAt: timestamp().defaultNow().notNull(),
 });
@@ -249,19 +241,29 @@ export const orderItemsTable = pgTable("order_items", {
   price: integer().notNull(), // price in paisa
 });
 
-export const customerTable = pgTable("customers", {
-  id: uuid()
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
-  organizationId: uuid()
-    .notNull()
-    .references(() => organizationsTable.id, { onDelete: "cascade" }),
-  name: varchar({ length: 255 }).notNull(),
-  email: varchar({ length: 255 }).notNull(),
-  phone: varchar({ length: 20 }),
-  createdAt: timestamp().defaultNow().notNull(),
-  updatedAt: timestamp().defaultNow().notNull(),
-});
+export const customerTable = pgTable(
+  "customers",
+  {
+    id: uuid()
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    organizationId: uuid()
+      .notNull()
+      .references(() => organizationsTable.id, { onDelete: "cascade" }),
+    name: varchar({ length: 255 }).notNull(),
+    email: varchar({ length: 255 }).notNull(),
+    phone: varchar({ length: 20 }).notNull(),
+    createdAt: timestamp().defaultNow().notNull(),
+    updatedAt: timestamp().defaultNow().notNull(),
+  },
+  (table) => ({
+    customerOrgPhoneUnique: unique("customer_org_phone_unique").on(
+      table.organizationId,
+      table.phone,
+    ),
+    customerPhoneIdx: index("customer_phone_idx").on(table.phone),
+  }),
+);
 
 export const ledgerEntriesTable = pgTable(
   "ledger_entries",

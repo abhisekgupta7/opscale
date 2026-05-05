@@ -7,6 +7,7 @@ import {
   ImageKitUploadNetworkError,
   upload,
 } from "@imagekit/next";
+import Image from "next/image";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,7 @@ interface ImageUploaderProps {
   onError: () => void;
   folder?: string; // e.g., "/products", "/merchant/123/products", "/heroSection/images"
   label?: string;
+  allowPaste?: boolean;
 }
 
 const ImageUploader = ({
@@ -23,6 +25,7 @@ const ImageUploader = ({
   onError,
   folder = "/PaymentProofs", // Default folder if not provided
   label = "Product Image",
+  allowPaste = false,
 }: ImageUploaderProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedUrl, setUploadedUrl] = useState<string>("");
@@ -89,6 +92,32 @@ const ImageUploader = ({
     handleUpload(file);
   };
 
+  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    if (!allowPaste) {
+      return;
+    }
+
+    const clipboardItems = Array.from(e.clipboardData.items);
+    const imageItem = clipboardItems.find((item) =>
+      item.type.startsWith("image/"),
+    );
+
+    if (!imageItem) {
+      return;
+    }
+
+    const file = imageItem.getAsFile();
+    if (!file) {
+      return;
+    }
+
+    e.preventDefault();
+    toast.success("Screenshot pasted", {
+      description: `${file.name || "clipboard image"} is ready to upload`,
+    });
+    handleUpload(file);
+  };
+
   const handleUpload = async (file: File) => {
     setIsUploading(true);
 
@@ -119,7 +148,10 @@ const ImageUploader = ({
       });
 
       // Success - get the URL from response
-      const imageUrl = (uploadResponse as any).url;
+      const imageUrl = (uploadResponse as { url?: string }).url;
+      if (!imageUrl) {
+        throw new Error("Upload response did not include an image URL");
+      }
       setUploadedUrl(imageUrl);
 
       toast.success("Image uploaded successfully!", { id: "upload-toast" });
@@ -171,7 +203,11 @@ const ImageUploader = ({
   };
 
   return (
-    <div className="space-y-3">
+    <div
+      className="space-y-3"
+      onPaste={allowPaste ? handlePaste : undefined}
+      tabIndex={allowPaste ? 0 : -1}
+    >
       <div className="flex flex-col gap-2">
         <label
           htmlFor="product-image"
@@ -179,6 +215,11 @@ const ImageUploader = ({
         >
           {label}
         </label>
+        {allowPaste && (
+          <div className="rounded-xl border border-dashed border-emerald-300 bg-emerald-50/70 px-3 py-2 text-xs text-emerald-800 outline-none focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/20">
+            Click here and paste your screenshot, or use the file picker below.
+          </div>
+        )}
         <Input
           id="product-image"
           type="file"
@@ -192,10 +233,12 @@ const ImageUploader = ({
 
       {uploadedUrl && !isUploading && (
         <div className="flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-          <img
+          <Image
             src={uploadedUrl}
             alt="Uploaded preview"
-            className="w-16 h-16 object-cover rounded-md"
+            width={64}
+            height={64}
+            className="h-16 w-16 rounded-md object-cover"
           />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-emerald-900">

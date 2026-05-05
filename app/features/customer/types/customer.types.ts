@@ -6,8 +6,7 @@ export const customerSchema = z.object({
   phone: z
     .string()
     .regex(/^[0-9]{10}$/, "Phone number must be 10 digits")
-    .optional()
-    .nullable(),
+    .min(1, "Phone number is required"),
 });
 
 export const createCustomerSchema = customerSchema;

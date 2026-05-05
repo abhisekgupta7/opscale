@@ -1,11 +1,15 @@
 "use server";
 
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { customerTable, paymentsTable } from "@/lib/db/schema";
 import { getActiveOrgId } from "@/app/features/auth/services/org-context.service";
 
-export async function getOrganizationPayments() {
+type PaymentStatusFilter = "ALL" | "PENDING" | "VERIFIED";
+
+export async function getOrganizationPayments(
+  status: PaymentStatusFilter = "ALL",
+) {
   try {
     const organizationId = await getActiveOrgId();
 
@@ -17,6 +21,14 @@ export async function getOrganizationPayments() {
       };
     }
 
+    const whereCondition =
+      status === "ALL"
+        ? eq(paymentsTable.organizationId, organizationId)
+        : and(
+            eq(paymentsTable.organizationId, organizationId),
+            eq(paymentsTable.status, status),
+          );
+
     const payments = await db
       .select({
         id: paymentsTable.id,
@@ -27,10 +39,12 @@ export async function getOrganizationPayments() {
         proofUrl: paymentsTable.proofUrl,
         createdAt: paymentsTable.createdAt,
         customerName: customerTable.name,
+        customerPhone: customerTable.phone,
+        customerEmail: customerTable.email,
       })
       .from(paymentsTable)
       .leftJoin(customerTable, eq(paymentsTable.customerId, customerTable.id))
-      .where(eq(paymentsTable.organizationId, organizationId))
+      .where(whereCondition)
       .orderBy(desc(paymentsTable.createdAt));
 
     return {

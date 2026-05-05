@@ -15,8 +15,14 @@ type DashboardOrderRow = {
 };
 
 type DashboardPaymentRow = {
+  id: string;
   amount: number;
+  currency: string;
+  provider: string;
   status: string;
+  proofUrl: string | null;
+  createdAt: Date;
+  customerName: string | null;
 };
 
 type LedgerSummary = {
@@ -288,6 +294,8 @@ export default async function DashboardPage() {
           </div>
         </div>
       </div>
+
+    
     </div>
   );
 }

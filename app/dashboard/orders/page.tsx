@@ -1,6 +1,15 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { getAllOrdersForOrg } from "@/app/features/order/actions/get-all-orders";
 
 function formatCurrency(amountInPaisa: number) {
@@ -57,36 +66,32 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
       </div>
 
       <div className="rounded-xl border border-white/10 bg-white/5">
-        <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-          <p className="text-sm font-semibold text-foreground">Recent Orders</p>
-          <div className="text-xs text-muted-foreground">
-            {orders.length} records
-          </div>
-        </div>
-        <div className="overflow-hidden">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-white/5 text-xs uppercase tracking-[0.16em] text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3 font-medium">Order ID</th>
-                <th className="px-4 py-3 font-medium">Customer</th>
-                <th className="px-4 py-3 font-medium">Total</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Date</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/10">
-              {orders.map((order) => (
-                <tr key={order.id}>
-                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
+        <Table>
+          <TableCaption>
+            {orders.length} order{orders.length === 1 ? "" : "s"} in your active
+            organization.
+          </TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Order ID</TableHead>
+              <TableHead>Customer</TableHead>
+              <TableHead>Total</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Date</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {orders.length > 0 ? (
+              orders.map((order) => (
+                <TableRow key={order.id}>
+                  <TableCell className="font-mono text-xs text-muted-foreground">
                     {order.id.slice(0, 8)}
-                  </td>
-                  <td className="px-4 py-3 font-medium text-foreground">
+                  </TableCell>
+                  <TableCell className="font-medium text-foreground">
                     {order.customerName}
-                  </td>
-                  <td className="px-4 py-3 text-foreground">
-                    {formatCurrency(order.totalAmount)}
-                  </td>
-                  <td className="px-4 py-3">
+                  </TableCell>
+                  <TableCell>{formatCurrency(order.totalAmount)}</TableCell>
+                  <TableCell>
                     <Badge
                       variant="outline"
                       className={
@@ -97,27 +102,26 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                     >
                       {order.status}
                     </Badge>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
                     {new Date(order.createdAt).toLocaleDateString()}
-                  </td>
-                </tr>
-              ))}
-              {orders.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className="px-4 py-8 text-center text-sm text-muted-foreground"
-                  >
-                    {result.success
-                      ? "No orders found for this organization."
-                      : result.message || "Unable to load orders."}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={5}
+                  className="h-24 text-center text-muted-foreground"
+                >
+                  {result.success
+                    ? "No orders found for this organization."
+                    : result.message || "Unable to load orders."}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

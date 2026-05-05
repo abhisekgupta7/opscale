@@ -53,14 +53,7 @@ export default function Navbar() {
 
         {session ? (
           <div className="flex items-center gap-3">
-            <Button
-              asChild
-              variant="ghost"
-              size="sm"
-              className="hidden border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10 sm:inline-flex h-10"
-            >
-              <Link href="/billingManual">Billing</Link>
-            </Button>
+            
             <Button
               asChild
               variant="ghost"

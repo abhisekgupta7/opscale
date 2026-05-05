@@ -1,4 +1,13 @@
 import { getLedgerSummaryForOrg } from "@/app/features/ledger/actions/get-ledger-summary";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 function formatCurrency(amountInPaisa: number) {
   return new Intl.NumberFormat("en-IN", {
@@ -61,27 +70,23 @@ export default async function LedgerPage() {
       </div>
 
       <div className="rounded-xl border border-white/10 bg-white/5">
-        <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-          <p className="text-sm font-semibold text-foreground">
-            Recent Entries
-          </p>
-          <div className="text-xs text-muted-foreground">
-            {summary.entryCount} records
-          </div>
-        </div>
-
-        <div className="overflow-hidden">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-white/5 text-xs uppercase tracking-[0.16em] text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3 font-medium">Type</th>
-                <th className="px-4 py-3 font-medium">Description</th>
-                <th className="px-4 py-3 font-medium">Amount</th>
-                <th className="px-4 py-3 font-medium">Date</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/10">
-              {summary.entries.map(
+        <Table>
+          <TableCaption>
+            {summary.entryCount} ledger entr
+            {summary.entryCount === 1 ? "y" : "ies"} for your active
+            organization.
+          </TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Type</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead className="text-right">Amount</TableHead>
+              <TableHead>Date</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {summary.entries.length > 0 ? (
+              summary.entries.map(
                 (entry: {
                   id: string;
                   type: string;
@@ -89,35 +94,36 @@ export default async function LedgerPage() {
                   amount: number;
                   createdAt: Date;
                 }) => (
-                  <tr key={entry.id}>
-                    <td className="px-4 py-3 text-foreground">{entry.type}</td>
-                    <td className="px-4 py-3 text-muted-foreground">
+                  <TableRow key={entry.id}>
+                    <TableCell className="text-foreground">
+                      {entry.type}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
                       {entry.description || "-"}
-                    </td>
-                    <td className="px-4 py-3 text-foreground">
+                    </TableCell>
+                    <TableCell className="text-right text-foreground">
                       {formatCurrency(entry.amount)}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
                       {new Date(entry.createdAt).toLocaleDateString()}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ),
-              )}
-              {summary.entries.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={4}
-                    className="px-4 py-8 text-center text-sm text-muted-foreground"
-                  >
-                    {result.success
-                      ? "No ledger entries yet for this organization."
-                      : result.message || "Unable to load ledger."}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+              )
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={4}
+                  className="h-24 text-center text-muted-foreground"
+                >
+                  {result.success
+                    ? "No ledger entries yet for this organization."
+                    : result.message || "Unable to load ledger."}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

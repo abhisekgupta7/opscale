@@ -1,5 +1,22 @@
 import CustomerForm from "@/app/features/customer/components/customer-form";
 import { getAllCustomersForOrg } from "@/app/features/customer/actions/get-all-customers";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+function formatCurrency(amountInPaisa: number) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "NPR",
+    maximumFractionDigits: 0,
+  }).format(amountInPaisa / 100);
+}
 
 type CustomersPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
@@ -28,49 +45,51 @@ export default async function CustomersPage({
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         <div className="rounded-xl border border-white/10 bg-white/5">
-          <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-            <p className="text-sm font-semibold text-foreground">
-              Customer List
-            </p>
-            <div className="text-xs text-muted-foreground">
-              {customers.length} records
-            </div>
-          </div>
-
-          <div className="overflow-hidden">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-white/5 text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Name</th>
-                  <th className="px-4 py-3 font-medium">Email</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/10">
-                {customers.map((customer) => (
-                  <tr key={customer.id}>
-                    <td className="px-4 py-3 font-medium text-foreground">
+          <Table>
+            <TableCaption>
+              {customers.length} customer{customers.length === 1 ? "" : "s"} in
+              your active organization, sorted by remaining balance.
+            </TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead className="text-right">Remaining Balance</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {customers.length > 0 ? (
+                customers.map((customer) => (
+                  <TableRow key={customer.id}>
+                    <TableCell className="font-medium text-foreground">
                       {customer.name}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {customer.phone}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
                       {customer.email}
-                    </td>
-                  </tr>
-                ))}
-                {customers.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan={2}
-                      className="px-4 py-8 text-center text-sm text-muted-foreground"
-                    >
-                      {result.success
-                        ? "No customers found for this organization."
-                        : result.message || "Unable to load customers."}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                    </TableCell>
+                    <TableCell className="text-right font-medium text-foreground">
+                      {formatCurrency(customer.remainingBalance)}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={4}
+                    className="h-24 text-center text-muted-foreground"
+                  >
+                    {result.success
+                      ? "No customers found for this organization."
+                      : result.message || "Unable to load customers."}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </div>
 
         <CustomerForm />

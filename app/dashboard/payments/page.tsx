@@ -1,14 +1,18 @@
+﻿import { getOrganizationPayments } from "@/app/features/billing/actions/get-org-payments";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { getOrganizationPayments } from "@/app/features/billing/actions/get-org-payments";
-
-type PaymentRow = {
-  id: string;
-  amount: number;
-  provider: string;
-  status: string;
-  createdAt: Date;
-  customerName: string | null;
-};
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { getActiveOrgContext } from "@/app/features/auth/services/org-context.service";
+import PaymentReviewActions from "@/app/features/billing/components/payment-review-actions";
 
 function formatCurrency(amountInPaisa: number) {
   return new Intl.NumberFormat("en-IN", {
@@ -18,11 +22,42 @@ function formatCurrency(amountInPaisa: number) {
   }).format(amountInPaisa / 100);
 }
 
-export default async function PaymentsPage() {
-  const result = await getOrganizationPayments();
+type StatusFilter = "ALL" | "PENDING" | "VERIFIED";
+
+type PaymentRow = {
+  id: string;
+  amount: number;
+  currency: string;
+  provider: string;
+  status: string;
+  proofUrl: string | null;
+  createdAt: Date;
+  customerName: string | null;
+  customerPhone: string | null;
+  customerEmail: string | null;
+};
+
+type PaymentsPageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function PaymentsPage({
+  searchParams,
+}: PaymentsPageProps) {
+  const resolvedSearchParams = await searchParams;
+  const rawStatus = resolvedSearchParams?.status;
+  const selectedStatus =
+    rawStatus === "PENDING" || rawStatus === "VERIFIED" ? rawStatus : "ALL";
+
+  const [result, context] = await Promise.all([
+    getOrganizationPayments(selectedStatus as StatusFilter),
+    getActiveOrgContext(),
+  ]);
+
   const payments: PaymentRow[] = result.success
     ? (result.payments as PaymentRow[])
     : [];
+  const canReview = context?.role === "OWNER" || context?.role === "ADMIN";
 
   return (
     <div className="space-y-6">
@@ -43,70 +78,122 @@ export default async function PaymentsPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-white/10 bg-white/5">
-        <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-          <p className="text-sm font-semibold text-foreground">Payments</p>
-          <div className="text-xs text-muted-foreground">Latest first</div>
-        </div>
+      <div className="flex items-center gap-2">
+        <Button
+          asChild
+          size="sm"
+          variant={selectedStatus === "ALL" ? "default" : "outline"}
+        >
+          <Link href="/dashboard/payments">All</Link>
+        </Button>
+        <Button
+          asChild
+          size="sm"
+          variant={selectedStatus === "PENDING" ? "default" : "outline"}
+        >
+          <Link href="/dashboard/payments?status=PENDING">Pending</Link>
+        </Button>
+        <Button
+          asChild
+          size="sm"
+          variant={selectedStatus === "VERIFIED" ? "default" : "outline"}
+        >
+          <Link href="/dashboard/payments?status=VERIFIED">Verified</Link>
+        </Button>
+      </div>
 
-        <div className="overflow-hidden">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-white/5 text-xs uppercase tracking-[0.16em] text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3 font-medium">Customer</th>
-                <th className="px-4 py-3 font-medium">Provider</th>
-                <th className="px-4 py-3 font-medium">Amount</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Date</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/10">
-              {payments.map((payment) => (
-                <tr key={payment.id}>
-                  <td className="px-4 py-3 font-medium text-foreground">
-                    {payment.customerName || "Organization Payment"}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {payment.provider}
-                  </td>
-                  <td className="px-4 py-3 text-foreground">
+      <div className="rounded-xl border border-white/10 bg-white/5">
+        <Table>
+          <TableCaption>
+            Payments for your active organization with review actions for
+            owner/admin.
+          </TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Payment ID</TableHead>
+              <TableHead>Customer</TableHead>
+              <TableHead className="text-right">Amount</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Proof</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>Review</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {payments.length > 0 ? (
+              payments.map((payment) => (
+                <TableRow key={payment.id}>
+                  <TableCell className="font-mono text-xs text-muted-foreground">
+                    {payment.id.slice(0, 8)}
+                  </TableCell>
+                  <TableCell className="font-medium text-foreground">
+                    {payment.customerName || "Platform subscription"}
+                  </TableCell>
+                  <TableCell className="text-right text-foreground">
                     {formatCurrency(payment.amount)}
-                  </td>
-                  <td className="px-4 py-3">
+                  </TableCell>
+                  <TableCell>
                     <Badge
                       variant="outline"
                       className={
-                        payment.status === "VERIFIED" ||
-                        payment.status === "COMPLETED"
+                        payment.status === "VERIFIED"
                           ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300"
-                          : payment.status === "REJECTED"
-                            ? "border-red-400/40 bg-red-400/10 text-red-300"
-                            : "border-amber-400/40 bg-amber-400/10 text-amber-300"
+                          : "border-amber-400/40 bg-amber-400/10 text-amber-300"
                       }
                     >
                       {payment.status}
                     </Badge>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
+                  </TableCell>
+                  <TableCell>
+                    {payment.proofUrl ? (
+                      <Link
+                        href={payment.proofUrl}
+                        target="_blank"
+                        className="text-sm text-emerald-300 underline-offset-4 hover:underline"
+                      >
+                        View Proof
+                      </Link>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">
+                        No proof
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
                     {new Date(payment.createdAt).toLocaleDateString()}
-                  </td>
-                </tr>
-              ))}
-              {payments.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className="px-4 py-8 text-center text-sm text-muted-foreground"
-                  >
-                    {result.success
-                      ? "No payments found for this organization."
-                      : result.message || "Unable to load payments."}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                  </TableCell>
+                  <TableCell>
+                    {payment.status === "PENDING" && canReview ? (
+                      <PaymentReviewActions
+                        paymentId={payment.id}
+                        customerName={payment.customerName}
+                        customerPhone={payment.customerPhone}
+                        customerEmail={payment.customerEmail}
+                        proofUrl={payment.proofUrl}
+                        amount={payment.amount}
+                        currency={payment.currency}
+                        createdAt={payment.createdAt}
+                      />
+                    ) : (
+                      <span className="text-sm text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={7}
+                  className="h-24 text-center text-muted-foreground"
+                >
+                  {result.success
+                    ? "No payments found for this organization."
+                    : result.message || "Unable to load payments."}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

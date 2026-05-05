@@ -6,7 +6,10 @@ import { getActiveOrgContext } from "@/app/features/auth/services/org-context.se
 import { submitManualPayment } from "../services/payment.services";
 import { createNotification } from "@/app/features/notification/services/notification.service";
 
-export async function submitManualPaymentAction(proofUrl: string) {
+export async function submitManualPaymentAction(
+  proofUrl: string,
+  customerId?: string,
+) {
   try {
     // ✅ Auth
     const context = await getActiveOrgContext();
@@ -34,6 +37,7 @@ export async function submitManualPaymentAction(proofUrl: string) {
       proofUrl,
       amount,
       "NPR",
+      customerId,
     );
 
     await createNotification(

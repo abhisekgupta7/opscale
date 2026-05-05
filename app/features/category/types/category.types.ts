@@ -1,21 +1,23 @@
 import { z } from "zod";
 
-export const categorySchema = z.object({
+export const createCategorySchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
+});
+
+export const updateCategorySchema = z.object({
+  id: z.string().uuid("Category id is required"),
+  name: z.string().min(2, "Name must be at least 2 characters").optional(),
   parentId: z
     .string()
     .uuid("Parent category must be a valid ID")
     .optional()
     .nullable(),
-  categoryPhoto: z.string().url("Category photo must be a valid URL"),
+  categoryPhoto: z
+    .string()
+    .url("Category photo must be a valid URL")
+    .optional(),
 });
 
-export const createCategorySchema = categorySchema;
-
-export const updateCategorySchema = categorySchema.partial().extend({
-  id: z.string().uuid("Category id is required"),
-});
-
-export type CategorySchema = z.infer<typeof categorySchema>;
+export type CategorySchema = z.infer<typeof updateCategorySchema>;
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
 export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>;

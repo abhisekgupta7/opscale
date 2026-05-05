@@ -7,19 +7,30 @@ export async function createNotification(
   type: string,
   message: string,
 ) {
-  const [created] = await db
-    .insert(notificationTable)
-    .values({
+  const now = new Date();
+
+  try {
+    const [created] = await db
+      .insert(notificationTable)
+      .values({
+        orgId,
+        type,
+        message,
+        isRead: false,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .returning();
+
+    return created;
+  } catch (error) {
+    console.error("Failed to create notification", {
       orgId,
       type,
-      message,
-      isRead: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    })
-    .returning();
-
-  return created;
+      error,
+    });
+    return null;
+  }
 }
 
 export async function getNotificationsByOrg(orgId: string, limit = 20) {

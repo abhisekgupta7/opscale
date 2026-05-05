@@ -15,6 +15,20 @@
       "when": 1777808662910,
       "tag": "0001_open_mister_sinister",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1777892400000,
+      "tag": "0002_add_notifications",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1777974940775,
+      "tag": "0003_clean_stryfe",
+      "breakpoints": true
     }
   ]
 }

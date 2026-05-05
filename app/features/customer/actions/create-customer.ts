@@ -7,7 +7,9 @@ import {
 } from "../types/customer.types";
 import {
   checkExistingCustomerByEmail,
+  checkExistingCustomerByPhone,
   createCustomerInDb,
+  normalizePhoneNumber,
 } from "../services/customer.service";
 
 export async function createCustomer(input: CreateCustomerInput) {
@@ -38,12 +40,24 @@ export async function createCustomer(input: CreateCustomerInput) {
       };
     }
 
+    const existingPhone = await checkExistingCustomerByPhone(
+      parsed.data.phone,
+      organizationId,
+    );
+
+    if (existingPhone.length > 0) {
+      return {
+        success: false,
+        message: `Customer with phone number "${parsed.data.phone}" already exists in your organization`,
+      };
+    }
+
     // ✅ Normalize data
     const customerData = {
       organizationId,
       name: parsed.data.name.trim(),
       email: parsed.data.email.toLowerCase().trim(),
-      phone: parsed.data.phone ? parsed.data.phone.trim() : null,
+      phone: normalizePhoneNumber(parsed.data.phone),
     };
 
     // ✅ Create customer

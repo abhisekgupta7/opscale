@@ -1,11 +1,13 @@
 import OrganizationSettingsForm from "@/app/features/auth/components/organization-settings-form";
-import OrgConfigForm from "@/app/features/OrgConfig/components/congfig-form";
+import OrgConfigForm from "@/app/features/OrgConfig/components/config-form";
+import ShareablePaymentLink from "@/app/dashboard/components/shareable-payment-link";
 import { getActiveOrganizationDetails } from "@/app/features/auth/actions/organization";
 
 export default async function SettingsPage() {
   const orgResult = await getActiveOrganizationDetails();
   const orgName =
     orgResult.success && orgResult.data ? orgResult.data.name : "";
+  const orgId = orgResult.success && orgResult.data ? orgResult.data.id : "";
 
   return (
     <div className="space-y-6">
@@ -20,6 +22,8 @@ export default async function SettingsPage() {
           Manage organization profile and billing/payment configuration.
         </p>
       </div>
+
+      {orgId && <ShareablePaymentLink organizationId={orgId} />}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <OrganizationSettingsForm initialName={orgName} />

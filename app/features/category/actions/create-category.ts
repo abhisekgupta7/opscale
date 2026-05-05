@@ -47,12 +47,10 @@ export async function createCategory(input: CreateCategoryInput) {
       };
     }
 
-    // ✅ Normalize optional fields
+    // ✅ Normalize create payload
     const categoryData = {
       organizationId,
       name: parsed.data.name.trim(),
-      parentId: parsed.data.parentId || null,
-      categoryPhoto: parsed.data.categoryPhoto.trim(),
     };
 
     // ✅ Create category
