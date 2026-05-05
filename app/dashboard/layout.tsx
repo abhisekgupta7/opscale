@@ -21,6 +21,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { getDashboardNotifications } from "@/app/features/notification/actions/get-dashboard-notifications";
 import NotificationBell from "@/app/features/notification/components/notification-bell";
+import DashboardSignOutButton from "@/components/Utility/DashboardSignOutButton";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutGrid },
@@ -49,10 +50,14 @@ export default async function DashboardLayout({
   );
 
   if (!membership) {
-    redirect("/auth/login");
+    redirect("/");
   }
 
   const organization = await getOrganizationById(session.user.activeOrgId);
+
+  if (!organization) {
+    redirect("/");
+  }
 
   const hasActiveSubscription = await isSubscriptionActive(
     session.user.activeOrgId,
@@ -97,6 +102,8 @@ export default async function DashboardLayout({
               );
             })}
           </nav>
+
+          <DashboardSignOutButton />
 
           <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4">
             <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">

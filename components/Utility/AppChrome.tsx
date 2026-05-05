@@ -15,7 +15,7 @@ export default function AppChrome({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Navbar />
-      <main className="grow">{children}</main>
+      <main>{children}</main>
       <Footer />
     </>
   );

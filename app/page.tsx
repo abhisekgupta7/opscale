@@ -21,6 +21,10 @@ import {
 import { PricingSection as BillingPricingSection } from "@/app/features/billing/components/pricing-section";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { isSubscriptionActive } from "./features/billing/services/payment.services";
+import {
+  getOrganizationById,
+  verifyMembership,
+} from "./features/auth/services/membership.service";
 
 const platformHighlights = [
   {
@@ -89,8 +93,17 @@ export default async function Home() {
   const session = await getServerSession(authOptions);
   const activeOrgId = session?.user?.activeOrgId;
   if (activeOrgId) {
-    const hasActiveSubscription = await isSubscriptionActive(activeOrgId);
-    if (hasActiveSubscription) {
+    const [organization, membership, hasActiveSubscription] = await Promise.all(
+      [
+        getOrganizationById(activeOrgId),
+        session?.user?.id
+          ? verifyMembership(session.user.id, activeOrgId)
+          : Promise.resolve(null),
+        isSubscriptionActive(activeOrgId),
+      ],
+    );
+
+    if (organization && membership && hasActiveSubscription) {
       redirect("/dashboard");
     }
   }
