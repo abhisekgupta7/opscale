@@ -1,11 +1,9 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { markNotificationReadAction } from "../actions/mark-notification-read";
-import { approvePaymentAction } from "@/app/features/billing/actions/approve-payment";
 
 type NotificationItem = {
   id: string;
@@ -43,27 +41,13 @@ export default function NotificationBell({
 }: NotificationBellProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
 
   const hasUnread = unreadCount > 0;
 
   const sortedNotifications = useMemo(() => notifications, [notifications]);
 
-  const handleMarkRead = (notificationId: string) => {
-    startTransition(async () => {
-      const notification = notifications.find(
-        (item) => item.id === notificationId,
-      );
-      await markNotificationReadAction(notificationId, notification?.orgId);
-      router.refresh();
-    });
-  };
-
-  const handleApprove = (paymentId: string, notificationId: string) => {
-    startTransition(async () => {
-      await approvePaymentAction(paymentId, notificationId);
-      router.refresh();
-    });
+  const handleOpenPayments = () => {
+    router.push("/dashboard/payments");
   };
 
   return (
@@ -124,33 +108,13 @@ export default function NotificationBell({
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  {!notification.isRead && (
-                    <Button
-                      type="button"
-                      onClick={() => handleMarkRead(notification.id)}
-                      disabled={isPending}
-                      className="h-8 border border-white/10 bg-white/5 px-2 text-xs text-foreground hover:bg-white/10"
-                    >
-                      Mark read
-                    </Button>
-                  )}
-
-                  {notification.paymentId &&
-                    notification.paymentStatus === "PENDING" && (
-                      <Button
-                        type="button"
-                        onClick={() =>
-                          handleApprove(
-                            notification.paymentId!,
-                            notification.id,
-                          )
-                        }
-                        disabled={isPending}
-                        className="h-8 bg-emerald-400 px-2 text-xs text-emerald-950 hover:bg-emerald-300"
-                      >
-                        Approve payment
-                      </Button>
-                    )}
+                  <Button
+                    type="button"
+                    onClick={handleOpenPayments}
+                    className="h-8 border border-white/10 bg-white/5 px-2 text-xs text-foreground hover:bg-white/10"
+                  >
+                    Open payments
+                  </Button>
 
                   {notification.proofUrl && (
                     <a

@@ -67,7 +67,7 @@ export default async function DashboardLayout({
   const notificationsResult = await getDashboardNotifications();
 
   if (!hasActiveSubscription) {
-    redirect("/billingManual");
+    redirect("/subscriptionPage");
   }
 
   return (
