@@ -106,7 +106,7 @@ export async function verifyMembership(
     .where(
       and(
         eq(membershipsTable.userId, userId),
-        eq(membershipsTable.organizationId, organizationId),
+        eq(membershipsTable.organizationId, String(organizationId)),
       ),
     )
     .limit(1);
@@ -141,7 +141,7 @@ export async function getOrganizationById(organizationId: string) {
   const org = await db
     .select()
     .from(organizationsTable)
-    .where(eq(organizationsTable.id, organizationId))
+    .where(eq(organizationsTable.id, String(organizationId)))
     .limit(1);
 
   return org[0] || null;

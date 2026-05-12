@@ -3,7 +3,6 @@ import { adminUsersTable } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import * as bcrypt from "bcryptjs";
 import * as jwt from "jsonwebtoken";
-import { verifyAdminToken } from "../utils/jwt";
 
 const JWT_SECRET = process.env.NEXTAUTH_SECRET || "your-secret-key";
 
