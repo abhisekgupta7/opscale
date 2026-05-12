@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowUpRight,
@@ -25,6 +26,28 @@ import {
   getOrganizationById,
   verifyMembership,
 } from "./features/auth/services/membership.service";
+import { COMPANY_CONFIG } from "./config/company";
+import { getSiteUrl } from "@/lib/site";
+
+const siteUrl = getSiteUrl();
+
+export const metadata: Metadata = {
+  title: "Wholesale inventory, orders, ledger and payment automation",
+  description:
+    "OpScale unifies wholesale inventory, order tracking, customer balances, payment verification, and ledger reconciliation in one fast workspace.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Wholesale inventory, orders, ledger and payment automation",
+    description:
+      "OpScale unifies wholesale inventory, order tracking, customer balances, payment verification, and ledger reconciliation in one fast workspace.",
+    url: "/",
+    type: "website",
+    siteName: COMPANY_CONFIG.name,
+    images: ["/og-image.png"],
+  },
+};
 
 const platformHighlights = [
   {
@@ -110,6 +133,7 @@ export default async function Home() {
 
   return (
     <div className="bg-[#0b0f14] text-slate-100">
+      <StructuredData />
       <HeroSection />
       <PlatformSection />
       <WorkflowSection />
@@ -117,6 +141,47 @@ export default async function Home() {
       <FaqSection />
       <CtaSection />
     </div>
+  );
+}
+
+function StructuredData() {
+  const schema = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: COMPANY_CONFIG.name,
+      url: siteUrl,
+      description: COMPANY_CONFIG.description,
+      email: COMPANY_CONFIG.email,
+      telephone: COMPANY_CONFIG.phone,
+      sameAs: [],
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: COMPANY_CONFIG.name,
+      url: siteUrl,
+      description: COMPANY_CONFIG.description,
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: faqs.map((faq) => ({
+        "@type": "Question",
+        name: faq.question,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: faq.answer,
+        },
+      })),
+    },
+  ];
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
   );
 }
 

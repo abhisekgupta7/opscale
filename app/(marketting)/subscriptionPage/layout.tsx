@@ -1,18 +1,17 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "OpScale Admin - Platform Control",
-  description: "OpScale Admin Dashboard",
+  title: "Subscription payment",
   robots: {
     index: false,
     follow: false,
   },
 };
 
-export default function AdminLayout({
+export default function SubscriptionPageLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <>{children}</>;
+  return children;
 }

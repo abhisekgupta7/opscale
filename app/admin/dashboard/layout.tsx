@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronDown, LayoutGrid, Settings, Wallet } from "lucide-react";
 import { redirect } from "next/navigation";
@@ -9,6 +10,14 @@ import { verifyAdminToken } from "@/app/features/admin/utils/jwt";
 import { getAdminNotifications } from "@/app/features/notification/actions/get-admin-notifications";
 import NotificationBell from "@/app/features/notification/components/notification-bell";
 import AdminSignOutButton from "@/components/Utility/AdminSignOutButton";
+
+export const metadata: Metadata = {
+  title: "Admin dashboard",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 const navItems = [
   { label: "Dashboard", href: "/admin/dashboard", icon: LayoutGrid },

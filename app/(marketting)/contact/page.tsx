@@ -1,6 +1,26 @@
+import type { Metadata } from "next";
 import { COMPANY_CONFIG } from "@/app/config/company";
 import { Share } from "lucide-react";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Contact sales",
+  description:
+    "Contact OpScale to discuss wholesale inventory, order automation, payment verification, and custom onboarding.",
+  alternates: {
+    canonical: "/contact",
+  },
+  openGraph: {
+    title: "Contact sales",
+    description:
+      "Contact OpScale to discuss wholesale inventory, order automation, payment verification, and custom onboarding.",
+    url: "/contact",
+    type: "website",
+    siteName: COMPANY_CONFIG.name,
+    images: ["/og-image.png"],
+  },
+};
+
 export default function Contact() {
   return (
     <main className="bg-[#0b0f14] px-6 pt-12 pb-6 text-slate-100">
