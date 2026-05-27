@@ -88,10 +88,10 @@ export default function CustomerForm() {
               )}
             </div>
 
-            {/* Customer Phone */}
+            {/* Customer Phone (Optional) */}
             <div className="space-y-2">
               <Label htmlFor="phone" className="text-sm text-foreground">
-                Phone
+                Phone (optional)
               </Label>
               <Input
                 id="phone"
