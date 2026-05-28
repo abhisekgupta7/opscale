@@ -42,28 +42,50 @@ export default function AIChatForm({ orgId }: { orgId: string }) {
         },
       );
 
-      if (!response.ok) throw new Error("Failed to connect to AI");
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("AI API error:", response.status, errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
 
-      const reader = response.body!.getReader();
+      if (!response.body) {
+        throw new Error("No response body from AI service");
+      }
+
+      const reader = response.body.getReader();
       const decoder = new TextDecoder();
+      let buffer = "";
+      let isDone = false;
 
-      while (true) {
+      while (!isDone) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value);
-        const lines = chunk.split("\n");
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
 
-        for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
-          const data = line.replace("data: ", "").trim();
-          if (data === "[DONE]") break;
+        // Keep the last potentially incomplete line in the buffer
+        buffer = lines[lines.length - 1];
+
+        for (let i = 0; i < lines.length - 1; i++) {
+          const line = lines[i].trim();
+
+          if (!line || !line.startsWith("data: ")) continue;
+
+          const data = line.slice(6).trim();
+
+          if (data === "[DONE]") {
+            isDone = true;
+            break;
+          }
+
+          if (!data) continue;
 
           try {
             const parsed = JSON.parse(data);
 
             if (parsed.error) {
-              // Replace last AI message with error
+              console.error("AI error response:", parsed.error);
               setMessages((prev: Message[]) => {
                 const updated = [...prev];
                 updated[updated.length - 1] = {
@@ -72,11 +94,11 @@ export default function AIChatForm({ orgId }: { orgId: string }) {
                 };
                 return updated;
               });
+              isDone = true;
               break;
             }
 
             if (parsed.text) {
-              // Append streamed text to last AI message
               setMessages((prev: Message[]) => {
                 const updated = [...prev];
                 updated[updated.length - 1] = {
@@ -86,20 +108,24 @@ export default function AIChatForm({ orgId }: { orgId: string }) {
                 return updated;
               });
 
-              // Auto scroll to bottom
               bottomRef.current?.scrollIntoView({ behavior: "smooth" });
             }
-          } catch {
-            // skip malformed chunks
+          } catch (parseErr) {
+            console.error("Failed to parse stream data:", data, parseErr);
           }
         }
       }
     } catch (err) {
+      console.error("Chat error:", err);
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Connection failed. Please try again.";
       setMessages((prev: Message[]) => {
         const updated = [...prev];
         updated[updated.length - 1] = {
           role: "ai",
-          text: "Something went wrong. Please try again.",
+          text: `Error: ${errorMessage}`,
         };
         return updated;
       });
