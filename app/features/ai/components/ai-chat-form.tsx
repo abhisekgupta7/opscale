@@ -31,7 +31,7 @@ export default function AIChatForm({ orgId }: { orgId: string }) {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_FASTAPI_URL}/api/chat`,
+        `${process.env.FASTAPI_URL}/api/chat`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
