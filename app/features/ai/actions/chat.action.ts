@@ -4,7 +4,7 @@ export async function sendMessageToAI(
 ): Promise<{ success: boolean; response?: string; error?: string }> {
   try {
     const response = await fetch(
-      process.env.NEXT_PUBLIC_FASTAPI_URL + "/api/chat",
+      "/api/ai/chat",
       {
         method: "POST",
         headers: {

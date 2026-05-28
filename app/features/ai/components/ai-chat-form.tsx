@@ -30,8 +30,9 @@ export default function AIChatForm({ orgId }: { orgId: string }) {
     setMessages((prev: Message[]) => [...prev, { role: "ai", text: "" }]);
 
     try {
+      console.log("Sending to: /api/ai/chat");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_FASTAPI_URL}/api/chat`,
+        `/api/ai/chat`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -41,6 +42,7 @@ export default function AIChatForm({ orgId }: { orgId: string }) {
           }),
         },
       );
+      console.log("Response status:", response.status);
 
       if (!response.ok) {
         const errorText = await response.text();
