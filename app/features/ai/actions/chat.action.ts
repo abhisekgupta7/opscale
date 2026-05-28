@@ -3,13 +3,16 @@ export async function sendMessageToAI(
   orgId: string,
 ): Promise<{ success: boolean; response?: string; error?: string }> {
   try {
-    const response = await fetch(process.env.FASTAPI_URL + "/api/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const response = await fetch(
+      process.env.NEXT_PUBLIC_FASTAPI_URL + "/api/chat",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message, orgId }),
       },
-      body: JSON.stringify({ message, orgId }),
-    });
+    );
     if (!response.ok) {
       const errorData = await response.json();
       return {
