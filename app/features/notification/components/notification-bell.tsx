@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 type NotificationItem = {
   id: string;
@@ -39,16 +39,13 @@ export default function NotificationBell({
   unreadCount,
   notifications,
 }: NotificationBellProps) {
-  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
   const hasUnread = unreadCount > 0;
 
   const sortedNotifications = useMemo(() => notifications, [notifications]);
 
-  const handleOpenPayments = () => {
-    router.push("/dashboard/payments");
-  };
+ 
 
   return (
     <div className="relative">
@@ -69,9 +66,15 @@ export default function NotificationBell({
             <p className="text-sm font-semibold text-foreground">
               Notifications
             </p>
+              <p className="text-sm font-semibold text-foreground">
+              <Link href="/dashboard/payments">
+                See all
+              </Link>
+            </p>
             <p className="text-xs text-muted-foreground">
               Unread: {unreadCount}
             </p>
+           
           </div>
 
           <div className="max-h-90 space-y-2 overflow-y-auto pr-1">
@@ -107,26 +110,7 @@ export default function NotificationBell({
                   )}
                 </div>
 
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    onClick={handleOpenPayments}
-                    className="h-8 border border-white/10 bg-white/5 px-2 text-xs text-foreground hover:bg-white/10"
-                  >
-                    Open payments
-                  </Button>
-
-                  {notification.proofUrl && (
-                    <a
-                      href={notification.proofUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex h-8 items-center rounded-md border border-white/10 bg-white/5 px-2 text-xs text-foreground hover:bg-white/10"
-                    >
-                      View proof
-                    </a>
-                  )}
-                </div>
+                
               </div>
             ))}
           </div>

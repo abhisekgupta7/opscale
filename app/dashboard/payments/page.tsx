@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { getActiveOrgContext } from "@/app/features/auth/services/org-context.service";
 import PaymentReviewActions from "@/app/features/billing/components/payment-review-actions";
+import ProofViewer from "./proof-viewer";
 
 function formatCurrency(amountInPaisa: number) {
   return new Intl.NumberFormat("en-IN", {
@@ -145,19 +146,7 @@ export default async function PaymentsPage({
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {payment.proofUrl ? (
-                      <Link
-                        href={payment.proofUrl}
-                        target="_blank"
-                        className="text-sm text-emerald-300 underline-offset-4 hover:underline"
-                      >
-                        View Proof
-                      </Link>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">
-                        No proof
-                      </span>
-                    )}
+                    <ProofViewer proofUrl={payment.proofUrl} />
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {new Date(payment.createdAt).toLocaleDateString()}

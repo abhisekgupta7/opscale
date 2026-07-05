@@ -164,6 +164,7 @@ export default function PublicPaymentPage() {
         setSubmitSuccess(true);
         setSuccessPaymentId(result.paymentId || null);
         toast.success(result.message);
+        //notification addition can be handled here if needed
 
         // Reset form after 2 seconds
         setTimeout(() => {
