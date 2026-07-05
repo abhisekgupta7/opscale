@@ -8,6 +8,7 @@ import {
   index,
   unique,
   pgEnum,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -301,3 +302,20 @@ export const ledgerEntriesTable = pgTable(
     ),
   }),
 );
+
+export const pushSubscriptionsTable = pgTable("push_subscriptions", {
+  id: uuid()
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: uuid()
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
+  organizationId: uuid()
+    .notNull()
+    .references(() => organizationsTable.id, { onDelete: "cascade" }),
+  endpoint: varchar({ length: 500 }).notNull(),
+  keys: jsonb().notNull(),
+  expirationTime: timestamp(),
+  createdAt: timestamp().defaultNow().notNull(),
+  updatedAt: timestamp().defaultNow().notNull(),
+});

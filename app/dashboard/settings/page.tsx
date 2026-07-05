@@ -2,6 +2,7 @@ import OrganizationSettingsForm from "@/app/features/auth/components/organizatio
 import OrgConfigForm from "@/app/features/OrgConfig/components/config-form";
 import ShareablePaymentLink from "@/app/dashboard/components/shareable-payment-link";
 import { getActiveOrganizationDetails } from "@/app/features/auth/actions/organization";
+import { PushNotificationManager } from "@/app/features/pushnotification/components/pushNotification";
 
 export default async function SettingsPage() {
   const orgResult = await getActiveOrganizationDetails();
@@ -12,15 +13,17 @@ export default async function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-          Settings
-        </p>
+
         <h1 className="text-2xl font-semibold text-foreground">
           Organization Settings
         </h1>
         <p className="text-sm text-muted-foreground">
           Manage organization profile and billing/payment configuration.
         </p>
+      </div>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <PushNotificationManager />
+       
       </div>
 
       {orgId && <ShareablePaymentLink organizationId={orgId} />}
