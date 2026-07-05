@@ -184,7 +184,7 @@ export default function PublicPaymentPage() {
     }
   };
 
-  // Loading state
+  // Loading state 
   if (isLoadingConfig) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 to-slate-100">

@@ -62,12 +62,12 @@ export default function Navbar() {
             >
               <Link href="/dashboard">Dashboard</Link>
             </Button>
-            <button
+            <Button
               onClick={() => signOut({ callbackUrl: "/" })}
               className="hidden rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200 hover:bg-white/10 sm:inline-flex h-10"
             >
               Sign out
-            </button>
+            </Button>
           </div>
         ) : (
           <div className="flex items-center gap-3">
@@ -84,7 +84,7 @@ export default function Navbar() {
               size="sm"
               className="hidden bg-emerald-400 text-emerald-950 hover:bg-emerald-300 sm:inline-flex h-10 font-medium"
             >
-              <Link href="/auth/signup">Get started</Link>
+              <Link href="/auth/signup">Sign Up</Link>
             </Button>
           </div>
         )}

@@ -50,30 +50,30 @@ export default function Contact() {
         </div>
 
         <div className="mt-6 grid gap-3 text-sm text-slate-400 sm:grid-cols-3">
-          <p className="rounded-xl border border-white/10 bg-[#10161e] px-4 py-3">
+          <Link href={`mailto:${COMPANY_CONFIG.email}`} className="rounded-xl border border-white/10 bg-[#10161e] px-4 py-3">
             <span className="block text-xs uppercase tracking-[0.16em] text-slate-500">
               Email
             </span>
             <span className="mt-1 block text-slate-100">
               {COMPANY_CONFIG.email}
             </span>
-          </p>
-          <p className="rounded-xl border border-white/10 bg-[#10161e] px-4 py-3">
+          </Link>
+          <Link href={`tel:${COMPANY_CONFIG.phone}`} className="rounded-xl border border-white/10 bg-[#10161e] px-4 py-3">
             <span className="block text-xs uppercase tracking-[0.16em] text-slate-500">
               Phone
             </span>
             <span className="mt-1 block text-slate-100">
               {COMPANY_CONFIG.phone}
             </span>
-          </p>
-          <p className="rounded-xl border border-white/10 bg-[#10161e] px-4 py-3">
+          </Link>
+          <Link href={`https://wa.me/${COMPANY_CONFIG.whatsapp}`} className="rounded-xl border border-white/10 bg-[#10161e] px-4 py-3">
             <span className="block text-xs uppercase tracking-[0.16em] text-slate-500">
               Whatsapp
             </span>
             <span className="mt-1 block text-slate-100">
               {COMPANY_CONFIG.whatsapp}
             </span>
-          </p>
+          </Link>
         </div>
       </section>
     </main>

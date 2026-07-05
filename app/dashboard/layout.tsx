@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
-  ChevronDown,
   LayoutGrid,
   Package,
   Receipt,
@@ -10,14 +9,11 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { redirect } from "next/navigation";
 import {
   getOrganizationById,
   verifyMembership,
 } from "@/app/features/auth/services/membership.service";
-import { isSubscriptionActive } from "@/app/features/billing/services/payment.services";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { getDashboardNotifications } from "@/app/features/notification/actions/get-dashboard-notifications";
@@ -69,15 +65,15 @@ export default async function DashboardLayout({
     redirect("/");
   }
 
-  const hasActiveSubscription = await isSubscriptionActive(
-    session.user.activeOrgId,
-  );
+  // const hasActiveSubscription = await isSubscriptionActive(
+  //   session.user.activeOrgId,
+  // );
 
   const notificationsResult = await getDashboardNotifications();
 
-  if (!hasActiveSubscription) {
-    redirect("/subscriptionPage");
-  }
+  // if (!hasActiveSubscription) {
+  //   redirect("/subscriptionPage");
+  // }
 
   return (
     <div className="dark min-h-screen bg-[#0b0f14] text-foreground">
@@ -92,9 +88,7 @@ export default async function DashboardLayout({
                 Wholesale OS
               </p>
             </div>
-            <div className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-1 text-xs text-emerald-300">
-              Live
-            </div>
+            
           </div>
 
           <nav className="mt-8 flex-1 space-y-1">
@@ -132,20 +126,16 @@ export default async function DashboardLayout({
           <header className="sticky top-0 z-20 border-b border-white/10 bg-[#0b0f14]/85 backdrop-blur">
             <div className="flex h-14 items-center justify-between gap-4 px-6">
               <div className="relative w-full max-w-md flex-1">
-                <Input
+                {/* <Input
                   placeholder="Search orders, customers, invoices"
                   className="h-9 border-white/10 bg-white/5 text-sm text-foreground placeholder:text-muted-foreground"
-                />
+                /> */}
               </div>
               <div className="flex shrink-0 items-center gap-3">
                 <NotificationBell
                   unreadCount={notificationsResult.unreadCount}
                   notifications={notificationsResult.notifications}
                 />
-                <Button className="h-9 rounded-full border border-white/10 bg-white/5 px-3 text-xs text-muted-foreground transition-colors hover:bg-white/10">
-                  {organization?.name || "Organization"}
-                  <ChevronDown className="h-3.5 w-3.5" />
-                </Button>
               </div>
             </div>
           </header>

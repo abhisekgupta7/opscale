@@ -11,8 +11,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth/next";
+
 import {
   Accordion,
   AccordionContent,
@@ -20,12 +19,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { PricingSection as BillingPricingSection } from "@/app/features/billing/components/pricing-section";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { isSubscriptionActive } from "./features/billing/services/payment.services";
-import {
-  getOrganizationById,
-  verifyMembership,
-} from "./features/auth/services/membership.service";
 import { COMPANY_CONFIG } from "./config/company";
 import { getSiteUrl } from "@/lib/site";
 
@@ -113,23 +106,23 @@ const faqs = [
 ];
 
 export default async function Home() {
-  const session = await getServerSession(authOptions);
-  const activeOrgId = session?.user?.activeOrgId;
-  if (activeOrgId) {
-    const [organization, membership, hasActiveSubscription] = await Promise.all(
-      [
-        getOrganizationById(activeOrgId),
-        session?.user?.id
-          ? verifyMembership(session.user.id, activeOrgId)
-          : Promise.resolve(null),
-        isSubscriptionActive(activeOrgId),
-      ],
-    );
+  // const session = await getServerSession(authOptions);
+  // const activeOrgId = session?.user?.activeOrgId;
+  // if (activeOrgId) {
+  //   const [organization, membership, hasActiveSubscription] = await Promise.all(
+  //     [
+  //       getOrganizationById(activeOrgId),
+  //       session?.user?.id
+  //         ? verifyMembership(session.user.id, activeOrgId)
+  //         : Promise.resolve(null),
+  //       isSubscriptionActive(activeOrgId),
+  //     ],
+  //   );
 
-    if (organization && membership && hasActiveSubscription) {
-      redirect("/dashboard");
-    }
-  }
+  //   if (organization && membership && hasActiveSubscription) {
+  //     redirect("/dashboard");
+  //   }
+  // }
 
   return (
     <div className="bg-[#0b0f14] text-slate-100">
@@ -219,16 +212,9 @@ function HeroSection() {
                 size="lg"
                 className="h-12 bg-emerald-400 px-6 text-emerald-950 hover:bg-emerald-300 text-base"
               >
-                <Link href="/#pricing">Start free trial</Link>
+                <Link href="/#pricing">Get Started</Link>
               </Button>
-              <Button
-                asChild
-                variant="ghost"
-                size="lg"
-                className="h-12 border border-white/10 bg-white/5 px-6 text-slate-200 hover:bg-white/10 text-base"
-              >
-                <Link href="/billing/manual">Schedule demo</Link>
-              </Button>
+             
             </div>
           </div>
 
@@ -463,9 +449,9 @@ function CtaSection() {
               <Button
                 asChild
                 size="lg"
-                className="h-10 bg-emerald-400 px-5 text-emerald-950 hover:bg-emerald-300"
+                className="h-10 bg-emerald-400 px-5 text-emerald-950 hover:bg-emerald-300 hover:text-white-950"
               >
-                <Link href="/contact">Book a strategy call</Link>
+                <Link href="/contact">Book a call</Link>
               </Button>
               <Button
                 asChild
