@@ -1,7 +1,5 @@
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { getAllOrdersForOrg } from "@/app/features/order/actions/get-all-orders";
-import { getAllCustomersForOrg } from "@/app/features/customer/actions/get-all-customers";
-import { getAllProductsForOrg } from "@/app/features/product/actions/get-all-products";
 import { getOrganizationPayments } from "@/app/features/billing/actions/get-org-payments";
 import { getLedgerSummaryForOrg } from "@/app/features/ledger/actions/get-ledger-summary";
 
@@ -46,14 +44,10 @@ function formatCurrency(amountInPaisa: number) {
 export default async function DashboardPage() {
   const [
     ordersResult,
-    customersResult,
-    productsResult,
     paymentsResult,
     ledgerResult,
   ] = await Promise.all([
     getAllOrdersForOrg(),
-    getAllCustomersForOrg(),
-    getAllProductsForOrg(),
     getOrganizationPayments(),
     getLedgerSummaryForOrg(),
   ]);
@@ -61,7 +55,6 @@ export default async function DashboardPage() {
   const orders: DashboardOrderRow[] = ordersResult.success
     ? (ordersResult.orders as DashboardOrderRow[])
     : [];
-  const customers = customersResult.success ? customersResult.customers : [];
   const payments: DashboardPaymentRow[] = paymentsResult.success
     ? (paymentsResult.payments as DashboardPaymentRow[])
     : [];
@@ -116,7 +109,6 @@ export default async function DashboardPage() {
     },
   ];
 
-  const recentOrders = orders.slice(0, 6);
 
   return (
     <div className="space-y-6">
